@@ -1,0 +1,22 @@
+# oc-githooks/stacks/infra.yml — Terraform / IaC overlay (merges onto base.yml)
+pre-commit:
+  commands:
+    tf-format:
+      glob: "*.tf"
+      run: terraform fmt {staged_files}
+      stage_fixed: true
+    tf-no-local-state:
+      glob: "*"
+      run: |
+        bad=$(printf '%s\n' {staged_files} | grep -E '(^|/)\.terraform/|\.tfstate(\.backup)?$|(^|/)\.terraform\.lock\.hcl$' | grep -v '\.terraform\.lock\.hcl$' || true)
+        if [ -n "$bad" ]; then echo "✗ Do not commit Terraform state / .terraform dir:"; echo "$bad"; exit 1; fi
+    tf-config-scan:
+      glob: "*.{tf,tfvars,yml,yaml,json}"
+      run: trivy config --exit-code 1 --severity HIGH,CRITICAL .
+pre-push:
+  parallel: false
+  commands:
+    tf-validate:
+      run: terraform validate
+    tf-lint:
+      run: tflint

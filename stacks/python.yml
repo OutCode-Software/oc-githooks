@@ -1,0 +1,25 @@
+# oc-githooks/stacks/python.yml — Python / FastAPI overlay (merges onto base.yml)
+pre-commit:
+  commands:
+    py-format:
+      glob: "*.py"
+      run: ruff format {staged_files}
+      stage_fixed: true
+    py-lint:
+      glob: "*.py"
+      run: ruff check --fix {staged_files}
+      stage_fixed: true
+    py-no-debug:
+      glob: "*.py"
+      run: |
+        if grep -HnE '(^|[^#].*)\b(breakpoint\(\)|import[[:space:]]+i?pdb|i?pdb\.set_trace\(\))' {staged_files}; then
+          echo "✗ Remove debugger statements (breakpoint()/pdb) before committing."; exit 1
+        fi
+pre-push:
+  parallel: false
+  commands:
+    py-typecheck:
+      glob: "*.py"
+      run: mypy .
+    py-test:
+      run: pytest -x -q

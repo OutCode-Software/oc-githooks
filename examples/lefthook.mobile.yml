@@ -1,0 +1,9 @@
+# Copy this file to your repository root as: lefthook.yml
+# Then copy base.yml -> .githooks/base.yml and stacks/mobile.yml -> .githooks/stacks/mobile.yml
+# (or run scripts/install-into-repo.sh mobile /path/to/your/repo)
+#
+# Once the central oc-githooks repo is published, replace the 'extends' block
+# below with the 'remotes' block shown in docs/INSTALL.md to auto-pull updates.
+extends:
+  - .githooks/base.yml
+  - .githooks/stacks/mobile.yml

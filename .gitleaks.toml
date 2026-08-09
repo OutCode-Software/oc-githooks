@@ -1,0 +1,20 @@
+# Outcode gitleaks config — extends gitleaks' built-in ruleset.
+# Copy into each repo (as .gitleaks.toml) and add repo-specific allowlist
+# entries here instead of teaching developers to use --no-verify.
+[extend]
+useDefault = true
+
+# Example allowlist entries (uncomment / adapt as needed):
+# [[allowlist]]
+# description = "Ignore test fixtures and sample data"
+# paths = [
+#   '''(^|/)tests?/fixtures/''',
+#   '''(^|/)__fixtures__/''',
+# ]
+#
+# [[allowlist]]
+# description = "Known-safe placeholder tokens"
+# regexes = [
+#   '''EXAMPLE_[A-Z0-9_]+''',
+#   '''your-token-here''',
+# ]

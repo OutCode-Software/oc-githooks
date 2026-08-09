@@ -1,0 +1,23 @@
+# oc-githooks/stacks/mobile.yml — Flutter / Dart overlay (merges onto base.yml)
+pre-commit:
+  commands:
+    dart-format:
+      glob: "*.dart"
+      run: dart format {staged_files}
+      stage_fixed: true
+    dart-analyze-staged:
+      glob: "*.dart"
+      run: dart analyze {staged_files}
+    dart-no-print:
+      glob: "*.dart"
+      run: |
+        if grep -HnE '(^|[^A-Za-z0-9_.])print\(' {staged_files}; then
+          echo "⚠ Avoid print() in Flutter — prefer debugPrint()/a logger (avoid_print)."
+        fi
+pre-push:
+  parallel: false
+  commands:
+    flutter-analyze:
+      run: flutter analyze
+    flutter-test:
+      run: flutter test
