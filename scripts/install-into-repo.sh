@@ -21,6 +21,22 @@ cp "$HERE/examples/lefthook.$STACK.yml" "$TARGET/lefthook.yml"
 mkdir -p "$TARGET/.github/workflows"
 cp "$HERE/ci/hooks.yml"        "$TARGET/.github/workflows/hooks.yml"
 
+# Starter tool configs for stacks that need them (swift/sql are required for the
+# hooks to run at all). Never overwrite a config the repo already has.
+CFG_DIR="$HERE/configs/$STACK"
+if [ -d "$CFG_DIR" ]; then
+  for f in "$CFG_DIR"/.[!.]* "$CFG_DIR"/*; do
+    [ -f "$f" ] || continue
+    base="$(basename "$f")"
+    if [ -e "$TARGET/$base" ]; then
+      echo "• kept existing $base (starter not copied)"
+    else
+      cp "$f" "$TARGET/$base"
+      echo "• added starter config $base"
+    fi
+  done
+fi
+
 echo "✓ Installed $STACK hooks into $TARGET"
 echo "Next:"
 echo "  cd $TARGET"

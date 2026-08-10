@@ -1,0 +1,9 @@
+# Starter SwiftLint config shipped by oc-githooks.
+# REQUIRED: excluding build output — without it, `swiftlint --strict` lints
+# generated files under .build / DerivedData and fails every push.
+excluded:
+  - .build
+  - .swiftpm
+  - Pods
+  - DerivedData
+  - "**/*.generated.swift"

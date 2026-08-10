@@ -2,9 +2,13 @@
 
 All notable changes to oc-githooks. Format loosely follows Keep a Changelog; versions are the tags repos pin to via `remotes`.
 
-## [Unreleased]
+## [v2.0.0] — 2026-08-11
 
-### Fixed (end-to-end validation pass, 2026-08-10)
+**Breaking:** `stacks/mobile.yml` was removed (split into per-language stacks).
+Repos on the old `mobile` stack move to `flutter` (or the matching per-language
+overlay). Pin `ref: v2` for this line; `v1` stays on the pre-split release.
+
+### Fixed (end-to-end validation pass)
 - **Coverage gates swallowed test failures** — multi-line `run:` blocks
   (swift/flutter/kotlin/php/ruby/node/reactnative) returned the trailing echo's
   exit code, so a failing test suite *passed* the gate. Now `<test> || exit 1`.
@@ -34,6 +38,11 @@ All notable changes to oc-githooks. Format loosely follows Keep a Changelog; ver
   a trailing boundary so `debuggerUtil`/`mydebugger` no longer trip it.
 
 ### Added
+- **Starter tool configs** (`configs/<stack>/`) auto-installed by the installer,
+  never clobbering an existing one: `swift` `.swiftlint.yml` (excludes `.build` —
+  required), `sql` `.sqlfluff` (mandatory header), `php` `.php-cs-fixer.dist.php`,
+  `ruby` `.rubocop.yml`. Swift now works out-of-the-box (was blocked by swiftlint
+  linting build artifacts).
 - **New language stacks** — `node` (Node.js/NestJS), `php`, `laravel`, `ruby`
   (Ruby/Rails). Each has format + lint + type-check/static-analysis + tests with
   the ≥25% coverage gate, plus a debug-statement guard.

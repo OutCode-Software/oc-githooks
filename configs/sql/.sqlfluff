@@ -1,0 +1,5 @@
+[sqlfluff]
+# REQUIRED: sqlfluff needs this [sqlfluff] section header (a bare
+# "dialect = ..." with no header makes sqlfluff crash).
+# Set your dialect: postgres | mysql | sqlite | bigquery | snowflake | ...
+dialect = postgres

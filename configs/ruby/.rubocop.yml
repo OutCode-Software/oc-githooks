@@ -1,0 +1,15 @@
+# Starter RuboCop config shipped by oc-githooks. Adjust to your team's standard.
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.2
+  Exclude:
+    - "vendor/**/*"
+    - "db/schema.rb"
+    - "bin/*"
+    - "node_modules/**/*"
+
+# Documentation and magic comments are noisy defaults for most app repos.
+Style/Documentation:
+  Enabled: false
+Style/FrozenStringLiteralComment:
+  Enabled: false

@@ -64,7 +64,7 @@ Replace your `lefthook.yml` with:
 ```yaml
 remotes:
   - git_url: git@github.com:OutCode-Software/oc-githooks   # SSH — repo is PRIVATE
-    ref: v1                     # rolling major tag; see docs/VERSIONING.md
+    ref: v2                     # rolling major tag (current line); see docs/VERSIONING.md
     refetch_frequency: 24h      # re-pull the ref at most once/day
     configs:
       - base.yml
@@ -88,8 +88,8 @@ with no per-commit network call.
 > works transparently. **CI** needs its own access: give the `git-hooks-mirror` workflow a
 > deploy key or a PAT with read access to `oc-githooks`, or it can't fetch the remote.
 
-**Getting updates:** with `ref: v1` + `refetch_frequency: 24h`, non-breaking updates
-arrive automatically within a day (we fast-forward the `v1` tag on each release). Pin an
+**Getting updates:** with `ref: v2` + `refetch_frequency: 24h`, non-breaking updates
+arrive automatically within a day (we fast-forward the rolling major tag on each release). Pin an
 exact tag (`ref: v1.2.0`) for reproducible builds and bump deliberately. Breaking changes
 ship as `v2`. Full policy in [`VERSIONING.md`](VERSIONING.md).
 
@@ -100,6 +100,13 @@ ship as `v2`. Full policy in [`VERSIONING.md`](VERSIONING.md).
 Hooks run on **staged files** using **your repo's own toolchain**. Each stack needs
 its tools installed and, for some, a config file. Verified end-to-end — see
 [`VALIDATION.md`](VALIDATION.md).
+
+**Starter configs are shipped automatically.** `install-into-repo.sh` copies a
+starter config for stacks that need one — `swift` (`.swiftlint.yml` excluding
+`.build`, **required**), `sql` (`.sqlfluff` with the mandatory header), `php`
+(`.php-cs-fixer.dist.php`), `ruby` (`.rubocop.yml`) — and never overwrites one you
+already have. `remotes`-model repos: copy them from [`configs/<stack>/`](../configs)
+in this repo.
 
 **All stacks:** gitignore build/dependency dirs (`node_modules/`, `vendor/`,
 `.build/`, `build/`, `coverage/`). If committed, the hooks will lint them.

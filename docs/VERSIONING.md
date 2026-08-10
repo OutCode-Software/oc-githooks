@@ -25,7 +25,7 @@ scheme that makes `remotes` updates predictable.
 ```yaml
 remotes:
   - git_url: git@github.com:OutCode-Software/oc-githooks
-    ref: v1
+    ref: v2
     refetch_frequency: 24h      # always | never | <duration e.g. 24h/30m>
     configs: [base.yml, stacks/<stack>.yml]
 ```
@@ -35,7 +35,7 @@ remotes:
 - To force an update now: re-run `lefthook install`, or clear the cache at
   `.git/info/lefthook-remotes/` and re-run it.
 
-**Recommended Outcode default:** `ref: v1` + `refetch_frequency: 24h`.
+**Recommended Outcode default:** `ref: v2` (current line) + `refetch_frequency: 24h`.
 
 ## Release checklist (maintainers)
 

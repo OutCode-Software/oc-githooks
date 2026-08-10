@@ -74,6 +74,7 @@ oc-githooks/
 │   ├── sql.yml               # SQL (cross-cutting)
 │   └── actions.yml           # GitHub Actions + YAML (cross-cutting)
 ├── examples/                 # per-repo lefthook.yml to copy (uses `extends`)
+├── configs/                  # starter tool configs (.swiftlint.yml, .sqlfluff, …)
 ├── ci/hooks.yml              # CI mirror — copy to .github/workflows/
 ├── scripts/install-into-repo.sh
 ├── .gitleaks.toml            # secret-scan allowlist template
@@ -88,7 +89,7 @@ oc-githooks/
 
 ## How updates propagate
 
-Published at [`OutCode-Software/oc-githooks`](https://github.com/OutCode-Software/oc-githooks) (private). The recommended setup is Lefthook **`remotes`** — a repo's `lefthook.yml` points at `oc-githooks` pinned to `ref: v1` with `refetch_frequency: 24h`, so non-breaking updates arrive automatically when we fast-forward the `v1` tag. Copying files in is still supported for the pilot. Full mechanics and the two-tier tag policy are in [`docs/INSTALL.md`](docs/INSTALL.md) and [`docs/VERSIONING.md`](docs/VERSIONING.md).
+Published at [`OutCode-Software/oc-githooks`](https://github.com/OutCode-Software/oc-githooks) (private). The recommended setup is Lefthook **`remotes`** — a repo's `lefthook.yml` points at `oc-githooks` pinned to `ref: v2` (current line) with `refetch_frequency: 24h`, so non-breaking updates arrive automatically when we fast-forward the rolling major tag. Copying files in is still supported for the pilot. Full mechanics and the two-tier tag policy are in [`docs/INSTALL.md`](docs/INSTALL.md) and [`docs/VERSIONING.md`](docs/VERSIONING.md).
 
 ## Design & policy background
 
