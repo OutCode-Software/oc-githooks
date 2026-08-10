@@ -2,6 +2,14 @@
 
 All notable changes to oc-githooks. Format loosely follows Keep a Changelog; versions are the tags repos pin to via `remotes`.
 
+## [v2.1.1] — 2026-08-11
+
+### Changed
+- **Default `git_url` is now HTTPS** (`https://github.com/OutCode-Software/oc-githooks`)
+  in `adopt-remotes.sh` and INSTALL.md — every OutCode-Software repo uses an HTTPS
+  origin, so devs are already authenticated for it; the old SSH default failed for
+  anyone without an OutCode-scoped SSH key. Override with `OC_GIT_URL=git@…` for SSH.
+
 ## [v2.1.0] — 2026-08-11
 
 ### Added

@@ -12,7 +12,10 @@
 set -euo pipefail
 
 REF="${OC_REF:-v2}"
-GIT_URL="${OC_GIT_URL:-git@github.com:OutCode-Software/oc-githooks}"
+# Default to HTTPS: every OutCode-Software repo uses an HTTPS origin, so this is what
+# devs are already authenticated for. Override with OC_GIT_URL=git@... (or an SSH alias)
+# if your team uses SSH keys with OutCode-Software access.
+GIT_URL="${OC_GIT_URL:-https://github.com/OutCode-Software/oc-githooks}"
 
 STACK="${1:?stack required (e.g. python|web|node|flutter|swift|kotlin|reactnative|php|laravel|ruby|infra|docker|shell|sql|actions)}"
 TARGET="${2:?target repo path required}"

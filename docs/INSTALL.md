@@ -83,7 +83,7 @@ To do it by hand instead, replace your `lefthook.yml` with:
 
 ```yaml
 remotes:
-  - git_url: git@github.com:OutCode-Software/oc-githooks   # SSH — repo is PRIVATE
+  - git_url: https://github.com/OutCode-Software/oc-githooks   # HTTPS (matches repo origins)
     ref: v2                     # rolling major tag (current line); see docs/VERSIONING.md
     refetch_frequency: 24h      # re-pull the ref at most once/day
     configs:
@@ -111,11 +111,12 @@ with no per-commit network call.
 > `adopt-remotes.sh` (it checks for you). Don't rely on `lefthook validate`.
 
 > **Private-repo auth.** Because `oc-githooks` is private, Lefthook clones it with the
-> developer's own git credentials. Default is the **SSH** `git_url`; if your team auths
-> to GitHub over **HTTPS** (credential helper / `gh`), use the `https://…` URL instead
-> (`OC_GIT_URL=https://github.com/OutCode-Software/oc-githooks`). Confirm access first:
-> `git ls-remote <git_url> v2`. **CI** needs its own access: give the `git-hooks-mirror`
-> workflow a deploy key or a PAT with read access to `oc-githooks`.
+> developer's own git credentials. Default is the **HTTPS** `git_url` — it matches how
+> OutCode-Software repos are cloned, so devs are already authenticated for it. If your
+> team uses **SSH** keys with OutCode-Software access, override with
+> `git_url: git@github.com:OutCode-Software/oc-githooks` (or your SSH-config alias).
+> Confirm access first: `git ls-remote <git_url> v2`. **CI** needs its own access: give
+> the `git-hooks-mirror` workflow a deploy key or a PAT with read access to `oc-githooks`.
 
 **Getting updates:** with `ref: v2` + `refetch_frequency: 24h`, non-breaking updates
 arrive automatically within a day (we fast-forward the rolling major tag on each release). Pin an
