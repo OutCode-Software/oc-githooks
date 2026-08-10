@@ -24,7 +24,9 @@ On **push** (`pre-push`):
 - 🧹 Blocks pushing **WIP / fixup! / squash!** commits; warns on non-standard branch names.
 - Runs the stack's **type-check + tests** (see each stack layer).
 
-Per-stack extras: **Python** (ruff format/lint, mypy, pytest), **Web** (prettier, eslint, tsc, vitest, no `debugger`, no `.only` focused tests), **Flutter** (dart format/analyze, flutter test), **Swift** (swiftformat, swiftlint, swift test), **Kotlin** (ktlint, gradle test), **React Native** (prettier, eslint, tsc, jest, no `debugger`/`console.log`), **Infra** (terraform fmt/validate, tflint, trivy, no committed state). Test stacks enforce a **≥25% coverage gate** on pre-push. Full list in [`docs/HOOKS_CATALOG.md`](docs/HOOKS_CATALOG.md).
+**Language stacks:** **Python** (ruff, mypy, pytest), **Web** (prettier, eslint, tsc, vitest, no `debugger`/`.only`), **Node/NestJS** (prettier, eslint, tsc, jest), **Flutter** (dart format/analyze, flutter test), **Swift** (swiftformat, swiftlint, swift test), **Kotlin** (ktlint, gradle test), **React Native** (prettier, eslint, tsc, jest, no `debugger`/`console.log`), **PHP** (php-cs-fixer, phpstan, phpunit), **Laravel** (pint, larastan, `artisan test`), **Ruby/Rails** (rubocop, rspec), **Infra** (terraform fmt/validate, tflint, trivy). Test stacks enforce a **≥25% coverage gate** on pre-push.
+
+**Cross-cutting overlays** (add alongside a language stack): **docker** (hadolint), **shell** (shfmt, shellcheck), **sql** (sqlfluff), **actions** (actionlint, yamllint). Full list in [`docs/HOOKS_CATALOG.md`](docs/HOOKS_CATALOG.md).
 
 Everything here was **validated by execution** (lefthook 2.1.10, gitleaks 8.21.2) — see [`docs/VALIDATION.md`](docs/VALIDATION.md).
 
@@ -35,7 +37,7 @@ Everything here was **validated by execution** (lefthook 2.1.10, gitleaks 8.21.2
 From this folder, install into a target repo in one command:
 
 ```bash
-scripts/install-into-repo.sh <python|web|flutter|swift|kotlin|reactnative|infra> /path/to/your/repo
+scripts/install-into-repo.sh <python|web|node|flutter|swift|kotlin|reactnative|php|laravel|ruby|infra|docker|shell|sql|actions> /path/to/your/repo
 ```
 
 Then, in your repo:
@@ -55,14 +57,22 @@ That's it — the next commit runs the hooks. Prefer to do it by hand, or want t
 ```
 oc-githooks/
 ├── base.yml                  # base hooks — every repo inherits these
-├── stacks/
-│   ├── python.yml            # Python / FastAPI layer
-│   ├── web.yml               # Next.js / TypeScript layer
-│   ├── flutter.yml           # Flutter / Dart layer
-│   ├── swift.yml             # iOS / Swift layer
-│   ├── kotlin.yml            # Android / Kotlin layer
-│   ├── reactnative.yml       # React Native (JS/TS) layer
-│   └── infra.yml             # Terraform / IaC layer
+├── stacks/                   # language stacks + cross-cutting overlays
+│   ├── python.yml            # Python / FastAPI
+│   ├── web.yml               # Next.js / TypeScript
+│   ├── node.yml              # Node.js / NestJS backend
+│   ├── flutter.yml           # Flutter / Dart
+│   ├── swift.yml             # iOS / Swift
+│   ├── kotlin.yml            # Android / Kotlin
+│   ├── reactnative.yml       # React Native (JS/TS)
+│   ├── php.yml               # PHP
+│   ├── laravel.yml           # Laravel (PHP)
+│   ├── ruby.yml              # Ruby / Rails
+│   ├── infra.yml             # Terraform / IaC
+│   ├── docker.yml            # Dockerfile (cross-cutting)
+│   ├── shell.yml             # shell scripts (cross-cutting)
+│   ├── sql.yml               # SQL (cross-cutting)
+│   └── actions.yml           # GitHub Actions + YAML (cross-cutting)
 ├── examples/                 # per-repo lefthook.yml to copy (uses `extends`)
 ├── ci/hooks.yml              # CI mirror — copy to .github/workflows/
 ├── scripts/install-into-repo.sh

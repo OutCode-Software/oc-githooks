@@ -22,7 +22,7 @@ Verify: `lefthook version` and `gitleaks version`.
 Fastest path, no external dependency. From the `oc-githooks` folder:
 
 ```bash
-scripts/install-into-repo.sh <python|web|flutter|swift|kotlin|reactnative|infra> /path/to/your/repo
+scripts/install-into-repo.sh <python|web|node|flutter|swift|kotlin|reactnative|php|laravel|ruby|infra|docker|shell|sql|actions> /path/to/your/repo
 ```
 
 This copies:
@@ -68,8 +68,16 @@ remotes:
     refetch_frequency: 24h      # re-pull the ref at most once/day
     configs:
       - base.yml
-      - stacks/web.yml          # your stack (flutter | swift | kotlin | reactnative | python | infra)
+      - stacks/web.yml          # your language stack
+      # add cross-cutting overlays as needed:
+      # - stacks/docker.yml
+      # - stacks/shell.yml
 ```
+
+> **Multiple overlays.** A repo lists every stack it needs — its language stack
+> plus any cross-cutting overlays (`docker`, `shell`, `sql`, `actions`). Each
+> check is `glob`-gated, so it only runs on matching files. A polyglot repo can
+> list several language stacks too.
 
 Then `lefthook install`. Lefthook shallow-clones the ref into `.git/info/lefthook-remotes/`
 (local cache, not committed) and merges the configs. Hooks then run from that cache

@@ -2,14 +2,16 @@
 
 Everything in this repo was **validated by execution**, not by inspection — Lefthook 2.1.10, Gitleaks 8.21.2, git 2.x on Linux, against throwaway repos and a real bare remote. `lefthook validate` returns **All good** on `base.yml` and the original stack files (`python`, `web`, `infra`). A clean commit runs in ~0.3s.
 
-> **Mobile split (v1.x, 2026-08-10).** `mobile.yml` was replaced by per-language
-> stacks: `flutter`, `swift`, `kotlin`, `reactnative`. Their YAML parses cleanly
-> and every **pattern-based guard** below is validated (block + near-miss). The
-> **tool-dependent** commands (`swiftformat`/`swiftlint`, `ktlint`, `flutter test`,
-> `jest --coverage`, and the ≥25% coverage gates) are the documented commands but
-> have **not yet been run end-to-end** — pending a machine with those toolchains
-> installed (same open caveat as `ruff`/`terraform`). `lefthook validate` on the new
-> files is likewise pending (Lefthook not installed in the authoring environment).
+> **Stack expansion (v1.x, 2026-08-10).** `mobile.yml` was replaced by per-language
+> stacks (`flutter`, `swift`, `kotlin`, `reactnative`), and `node`, `php`, `laravel`,
+> `ruby` language stacks plus `docker`, `shell`, `sql`, `actions` cross-cutting
+> overlays were added. All 15 stack files' YAML parses cleanly (via psych) and every
+> **pattern-based guard** below is validated (block + near-miss). The **tool-dependent**
+> commands (swiftformat/swiftlint, ktlint, flutter/jest/rspec/phpunit, hadolint,
+> shellcheck, sqlfluff, actionlint, and the ≥25% coverage gates) are the documented
+> commands but have **not yet been run end-to-end** — pending a machine with those
+> toolchains installed (same open caveat as `ruff`/`terraform`). `lefthook validate`
+> on the new files is likewise pending (Lefthook not installed in the authoring env).
 
 ## Commit matrix (base)
 
@@ -53,7 +55,10 @@ Everything in this repo was **validated by execution**, not by inspection — Le
 | Web / RN `describe.only` / `it.only` | ✅ | a normal `describe/it`; `const onlyThing` |
 | Flutter / Swift `print(` | ✅ (warn) | `debugPrint(`, `sprint(` |
 | Kotlin `println(` | ✅ (warn) | `myprintln(` |
-| React Native `console.log` / `console.debug` | ✅ (warn) | `console.error`, `myconsole.log` |
+| React Native / Node `console.log` / `console.debug` | ✅ (warn) | `console.error`, `myconsole.log` |
+| PHP `var_dump(`/`dd(`/`print_r(` | ✅ (warn) | `$obj->dump()` method call |
+| Laravel `dd(`/`dump(`/`ray(` | ✅ (block) | `$collection->dump()` method call |
+| Ruby `binding.pry`/`byebug`/`debugger` | ✅ (block) | `my_byebug` identifier |
 | Infra `*.tfstate` / `.terraform/` | ✅ | regular `*.tf` files |
 
 ## Notable findings from validation

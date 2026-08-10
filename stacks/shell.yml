@@ -1,0 +1,10 @@
+# oc-githooks/stacks/shell.yml — Shell script overlay (cross-cutting; add alongside a language stack)
+pre-commit:
+  commands:
+    shell-format:
+      glob: "*.{sh,bash}"
+      run: shfmt -w {staged_files}
+      stage_fixed: true
+    shell-lint:
+      glob: "*.{sh,bash}"
+      run: shellcheck {staged_files}

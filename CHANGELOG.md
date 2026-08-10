@@ -17,6 +17,12 @@ All notable changes to oc-githooks. Format loosely follows Keep a Changelog; ver
   a trailing boundary so `debuggerUtil`/`mydebugger` no longer trip it.
 
 ### Added
+- **New language stacks** — `node` (Node.js/NestJS), `php`, `laravel`, `ruby`
+  (Ruby/Rails). Each has format + lint + type-check/static-analysis + tests with
+  the ≥25% coverage gate, plus a debug-statement guard.
+- **New cross-cutting overlays** — `docker` (hadolint), `shell` (shfmt +
+  shellcheck), `sql` (sqlfluff), `actions` (actionlint + yamllint). These lint
+  files that appear across repos and are added alongside a language stack.
 - **docs/VERSIONING.md** — two-tier tag scheme (immutable `v1.x.y` + rolling `v1`),
   `refetch_frequency` update mechanism, and the maintainer release checklist.
 - **docs/INSTALL.md** — `remotes` is now the recommended standard: SSH `git_url`

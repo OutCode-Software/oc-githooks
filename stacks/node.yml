@@ -1,0 +1,33 @@
+# oc-githooks/stacks/node.yml — Node.js / NestJS backend overlay (merges onto base.yml)
+pre-commit:
+  commands:
+    node-format:
+      glob: "*.{ts,js,mjs,cjs,json}"
+      run: npx --no-install prettier --write {staged_files}
+      stage_fixed: true
+    node-lint:
+      glob: "*.{ts,js,mjs,cjs}"
+      run: npx --no-install eslint --fix {staged_files}
+      stage_fixed: true
+    node-no-debugger:
+      glob: "*.{ts,js,mjs,cjs}"
+      run: |
+        if grep -HnE '(^|[^A-Za-z0-9_])debugger([^A-Za-z0-9_]|$)' {staged_files}; then
+          echo "✗ Remove 'debugger' statements before committing."; exit 1
+        fi
+    node-no-focused-tests:
+      glob: "*.{test,spec}.{ts,js}"
+      run: |
+        if grep -HnE '\b(describe|it|test|context)\.only\b' {staged_files}; then
+          echo "✗ Remove .only from tests — it silently skips the rest of the suite."; exit 1
+        fi
+pre-push:
+  parallel: false
+  commands:
+    node-typecheck:
+      run: npx --no-install tsc --noEmit
+    node-test:
+      # Jest with coverage; fails if line coverage < 25% (bar rises over time).
+      run: |
+        npx --no-install jest --coverage --coverageReporters=json-summary --passWithNoTests
+        node -e 'const p=require("./coverage/coverage-summary.json").total.lines.pct; if(p<25){console.error("✗ Line coverage "+p+"% is below the 25% minimum. Add tests.");process.exit(1)} console.log("✓ Coverage "+p+"%")'

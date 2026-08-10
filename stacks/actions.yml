@@ -1,0 +1,9 @@
+# oc-githooks/stacks/actions.yml — GitHub Actions + YAML overlay (cross-cutting)
+pre-commit:
+  commands:
+    actions-lint:
+      glob: ".github/workflows/*.{yml,yaml}"
+      run: actionlint {staged_files}
+    yaml-lint:
+      glob: "*.{yml,yaml}"
+      run: yamllint {staged_files}

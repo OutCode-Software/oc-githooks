@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
 # Usage: scripts/install-into-repo.sh <stack> <path-to-target-repo>
-#   <stack> = python | web | flutter | swift | kotlin | reactnative | infra
+#   language stacks:   python | web | node | flutter | swift | kotlin | reactnative | php | laravel | ruby | infra
+#   cross-cutting:     docker | shell | sql | actions   (add alongside a language stack)
 set -euo pipefail
-STACK="${1:?stack required: python|web|flutter|swift|kotlin|reactnative|infra}"
+STACK="${1:?stack required (e.g. python|web|node|flutter|swift|kotlin|reactnative|php|laravel|ruby|infra|docker|shell|sql|actions)}"
 TARGET="${2:?target repo path required}"
 HERE="$(cd "$(dirname "$0")/.." && pwd)"
 
-case "$STACK" in python|web|flutter|swift|kotlin|reactnative|infra) ;; *) echo "Unknown stack: $STACK"; exit 1;; esac
+case "$STACK" in
+  python|web|node|flutter|swift|kotlin|reactnative|php|laravel|ruby|infra|docker|shell|sql|actions) ;;
+  *) echo "Unknown stack: $STACK"; exit 1;;
+esac
 [ -d "$TARGET/.git" ] || { echo "✗ $TARGET is not a git repo"; exit 1; }
 
 mkdir -p "$TARGET/.githooks/stacks"

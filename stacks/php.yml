@@ -1,0 +1,37 @@
+# oc-githooks/stacks/php.yml — PHP overlay (merges onto base.yml)
+# Requires php-cs-fixer, phpstan (phpstan.neon), and phpunit (with pcov/xdebug for coverage).
+pre-commit:
+  commands:
+    php-format:
+      glob: "*.php"
+      run: php-cs-fixer fix {staged_files}
+      stage_fixed: true
+    php-syntax:
+      glob: "*.php"
+      run: |
+        for f in {staged_files}; do php -l "$f" || exit 1; done
+    php-no-debug:
+      glob: "*.php"
+      run: |
+        if grep -HnE '(^|[^A-Za-z0-9_>])(var_dump|var_export|print_r|dd|dump)\(' {staged_files}; then
+          echo "⚠ Remove debug output (var_dump/print_r/dd/dump) before committing."
+        fi
+pre-push:
+  parallel: false
+  commands:
+    php-analyse:
+      run: phpstan analyse --no-progress
+    php-test:
+      # phpunit with Clover coverage; fails if line coverage < 25%.
+      run: |
+        phpunit --coverage-clover=coverage/clover.xml
+        line=$(grep -o '<metrics [^>]*>' coverage/clover.xml | tail -1)
+        covered=$(printf '%s' "$line" | sed -E 's/.*coveredstatements="([0-9]+)".*/\1/')
+        total=$(printf '%s' "$line" | sed -E 's/.* statements="([0-9]+)".*/\1/')
+        if [ -n "$total" ] && [ "$total" -gt 0 ]; then
+          pct=$((covered * 100 / total))
+          if [ "$pct" -lt 25 ]; then echo "✗ Line coverage ${pct}% is below the 25% minimum. Add tests."; exit 1; fi
+          echo "✓ Coverage ${pct}% (>=25%)"
+        else
+          echo "⚠ Could not read Clover coverage — ensure pcov/xdebug is enabled."
+        fi

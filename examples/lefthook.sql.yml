@@ -1,0 +1,9 @@
+# Copy this file to your repository root as: lefthook.yml
+# Then copy base.yml -> .githooks/base.yml and stacks/sql.yml -> .githooks/stacks/sql.yml
+# (or run scripts/install-into-repo.sh sql /path/to/your/repo)
+#
+# For the auto-updating setup, replace the 'extends' block below with the
+# 'remotes' block shown in docs/INSTALL.md to pull updates from oc-githooks.
+extends:
+  - .githooks/base.yml
+  - .githooks/stacks/sql.yml

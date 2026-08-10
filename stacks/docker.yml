@@ -1,0 +1,6 @@
+# oc-githooks/stacks/docker.yml — Dockerfile overlay (cross-cutting; add alongside a language stack)
+pre-commit:
+  commands:
+    docker-lint:
+      glob: "{Dockerfile,Dockerfile.*,*.Dockerfile,*.dockerfile}"
+      run: hadolint {staged_files}

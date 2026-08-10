@@ -1,0 +1,22 @@
+# oc-githooks/stacks/laravel.yml — Laravel (PHP) overlay (merges onto base.yml)
+# Uses Laravel Pint (formatter) + Larastan/PHPStan + `php artisan test`.
+pre-commit:
+  commands:
+    laravel-format:
+      glob: "*.php"
+      run: ./vendor/bin/pint {staged_files}
+      stage_fixed: true
+    laravel-no-debug:
+      glob: "*.php"
+      run: |
+        if grep -HnE '(^|[^A-Za-z0-9_>])(dd|dump|ray|var_dump)\(' {staged_files}; then
+          echo "✗ Remove debug helpers (dd/dump/ray/var_dump) — they leak output/halt requests."; exit 1
+        fi
+pre-push:
+  parallel: false
+  commands:
+    laravel-analyse:
+      run: ./vendor/bin/phpstan analyse --no-progress
+    laravel-test:
+      # Laravel's test runner with a built-in coverage threshold (needs pcov/xdebug).
+      run: php artisan test --coverage --min=25
