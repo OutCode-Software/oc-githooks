@@ -78,7 +78,7 @@ pre-commit:
       run: |
         b=$(git symbolic-ref --short -q HEAD || echo DETACHED)
         case "$b" in
-          develop|stage|staging|prod|main)
+          develop|stage|prod|main)
             echo "✗ Direct commits to '$b' are blocked."
             echo "  Branch as feature/<TASKID>-desc and open a PR (Governance SOP §7.2)."
             exit 1 ;;
@@ -131,7 +131,7 @@ pre-push:
       priority: 1
       use_stdin: true
       run: |
-        protected="develop stage staging prod main"; status=0
+        protected="develop stage prod main"; status=0
         while read -r lref lsha rref rsha; do
           [ -z "$rref" ] && continue
           rb=${rref#refs/heads/}
@@ -158,7 +158,7 @@ pre-push:
       priority: 3
       run: |
         b=$(git symbolic-ref --short -q HEAD || echo DETACHED)
-        case "$b" in develop|stage|staging|prod|main|DETACHED) exit 0 ;; esac
+        case "$b" in develop|stage|prod|main|DETACHED) exit 0 ;; esac
         echo "$b" | grep -qE '^(feature|fix|chore|hotfix)/[A-Z]{2,}-[0-9]+' || {
           echo "⚠ Branch '$b' should be <type>/<TASKID>-desc (feature|fix|chore|hotfix), e.g. feature/ENS-123-waitlist."
         }

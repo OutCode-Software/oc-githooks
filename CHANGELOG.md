@@ -15,7 +15,9 @@ All notable changes to oc-githooks. Format loosely follows Keep a Changelog; ver
 ### Validated
 - lefthook 2.1.10, gitleaks 8.21.2: commit matrix (13), push matrix (6), commit-format matrix (12), stack-guard matrix (10) — all green. See `docs/VALIDATION.md`.
 
+### Changed
+- Protected-branch set reconciled to `develop stage prod main` (Governance SOP naming; dropped `staging`). Applied to `base.yml` (commit + push guards) and `ci/hooks.yml`.
+
 ### Pending (DM working session)
-- Canonical protected-branch set (config enforces the union `develop stage staging prod main` until reconciled).
 - Ratify Conventional Commits; set warn→block date for ClickUp-ID and branch-name checks.
 - Publish to `OutCode-Software/oc-githooks` and tag `v1` to enable the `remotes` adoption path.

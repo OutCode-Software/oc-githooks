@@ -13,7 +13,7 @@ Every hook we run today, plus the full menu of what git hooks *can* do and what 
 | `large-file-guard` | ✅ | blocks files >5 MB (use Git LFS) |
 | `merge-conflict-markers` | ✅ | blocks `<<<<<<< ` / `>>>>>>> ` markers (won't false-positive on Markdown `=======` headings) |
 | `normalize-whitespace` | auto-fix | trims trailing whitespace, ensures final newline (text files; re-stages) |
-| `protected-branch-guard` | ✅ | no direct commits to `develop/stage/staging/prod/main` |
+| `protected-branch-guard` | ✅ | no direct commits to `develop/stage/prod/main` |
 
 ### `commit-msg` (base)
 

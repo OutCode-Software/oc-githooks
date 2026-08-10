@@ -15,7 +15,7 @@ On **commit** (`pre-commit` + `commit-msg`):
 - 🔐 **Secret scan** of staged changes (Gitleaks) — blocks commits containing keys/tokens/credentials.
 - 🚫 **Credential-file guard** — blocks `.env`, `*.pem`, keystores, `*.tfstate`, `.npmrc`, service-account JSON… (allows `.env.example`/`.sample`/`.template`).
 - 📦 **Large-file guard** (>5 MB → use Git LFS), **merge-conflict-marker** check, **whitespace/EOF** auto-fix.
-- 🌿 **Protected-branch guard** — no direct commits to `develop` / `stage` / `staging` / `prod` / `main`.
+- 🌿 **Protected-branch guard** — no direct commits to `develop` / `stage` / `prod` / `main`.
 - 📝 **Commit message** must follow [Conventional Commits](docs/COMMIT_CONVENTION.md) (`feat(scope): …`, `fix: …`, …); warns on missing ClickUp task ID; blocks the `Co-Authored-By: Claude` trailer.
 
 On **push** (`pre-push`):

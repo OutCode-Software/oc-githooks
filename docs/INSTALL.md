@@ -98,7 +98,8 @@ lefthook run pre-push   --all-files
 
 ## Open decisions
 
-Two values are still pending ratification (DM working session):
+One value is still pending ratification (DM working session):
 
-1. **Protected branches.** GitHub Governance SOP uses `develop / stage / prod / main`; the Git→ClickUp doc uses `develop / staging / main`. The config enforces the **union** (`develop stage staging prod main`) until reconciled — edit the `protected` list in `base.yml` once decided.
-2. **Commit convention.** Conventional Commits is enabled; confirm this is the org standard and set the warn→block date for the ClickUp-ID and branch-name checks.
+1. **Commit convention.** Conventional Commits is enabled; confirm this is the org standard and set the warn→block date for the ClickUp-ID and branch-name checks.
+
+**Resolved:** the protected-branch set is `develop / stage / prod / main` (the Git→ClickUp doc's `staging` was dropped in favour of the Governance SOP naming). Enforced by the `protected` list in `base.yml` and mirrored in `ci/hooks.yml`.
