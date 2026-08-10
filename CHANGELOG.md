@@ -2,7 +2,10 @@
 
 All notable changes to oc-githooks. Format loosely follows Keep a Changelog; versions are the tags repos pin to via `remotes`.
 
-## [Unreleased] — pilot
+## [v1] — 2026-08-10
+
+First tagged release. Published to `OutCode-Software/oc-githooks`; repos can now
+adopt via the Lefthook `remotes:` path pinned to `ref: v1` (see `docs/INSTALL.md`).
 
 ### Added
 - **base.yml** — `pre-commit`: gitleaks staged secret scan, credential/state-file guard (`.env`, keys, `*.tfstate`, `.npmrc`, `.pypirc`; allows `.env.example`), large-file guard (>5 MB), merge-conflict-marker check, whitespace/EOF auto-fix, protected-branch commit guard.
@@ -20,4 +23,4 @@ All notable changes to oc-githooks. Format loosely follows Keep a Changelog; ver
 
 ### Pending (DM working session)
 - Ratify Conventional Commits; set warn→block date for ClickUp-ID and branch-name checks.
-- Publish to `OutCode-Software/oc-githooks` and tag `v1` to enable the `remotes` adoption path.
+- Validate stack overlays end-to-end with real toolchains (ruff, eslint, dart, terraform).
