@@ -1,6 +1,6 @@
 # oc-githooks
 
-Outcode's shared **git hooks** standard — one baseline every repository inherits, with thin per-stack layers for backend, web, mobile, and infrastructure. Built on [Lefthook](https://lefthook.dev) (a single fast Go binary, no language runtime required) plus [Gitleaks](https://github.com/gitleaks/gitleaks) for secret scanning.
+Outcode's shared **git hooks** standard — one baseline every repository inherits, with thin per-stack layers for each language and framework we use (11 language stacks + 4 cross-cutting overlays). Built on [Lefthook](https://lefthook.dev) (a single fast Go binary, no language runtime required) plus [Gitleaks](https://github.com/gitleaks/gitleaks) for secret scanning.
 
 > **Status: pilot.** This is a draft for real repos to trial and give feedback on before it becomes the org standard. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to send feedback, and [`docs/FEEDBACK.md`](docs/FEEDBACK.md) for the template.
 
@@ -28,7 +28,7 @@ On **push** (`pre-push`):
 
 **Cross-cutting overlays** (add alongside a language stack): **docker** (hadolint), **shell** (shfmt, shellcheck), **sql** (sqlfluff), **actions** (actionlint, yamllint). Full list in [`docs/HOOKS_CATALOG.md`](docs/HOOKS_CATALOG.md).
 
-Everything here was **validated by execution** (lefthook 2.1.10, gitleaks 8.21.2) — see [`docs/VALIDATION.md`](docs/VALIDATION.md).
+All 15 stacks were **validated end-to-end** — installed into throwaway repos and exercised with real toolchains (clean pass, guard block, formatter auto-fix, and both sides of the coverage gate). That pass found and fixed 7 real bugs. See [`docs/VALIDATION.md`](docs/VALIDATION.md).
 
 ---
 
@@ -78,20 +78,21 @@ oc-githooks/
 ├── scripts/install-into-repo.sh
 ├── .gitleaks.toml            # secret-scan allowlist template
 └── docs/
-    ├── INSTALL.md            # detailed install + the `remotes` upgrade path
+    ├── INSTALL.md            # detailed install, `remotes` path, per-stack prerequisites
+    ├── VERSIONING.md         # tag scheme + how updates reach repos
     ├── COMMIT_CONVENTION.md  # the commit-message rules, with examples
     ├── HOOKS_CATALOG.md      # every hook we run + the full menu of options
     ├── VALIDATION.md         # what was tested and how to re-run it
     └── FEEDBACK.md           # structured feedback template for the pilot
 ```
 
-## How updates propagate (once published)
+## How updates propagate
 
-For the pilot, hooks are **copied** into each repo (simple, no dependency). Once `oc-githooks` is published to the Outcode GitHub org, repos switch their `lefthook.yml` to Lefthook `remotes` pinned to a version tag — then a tag bump propagates changes everywhere. Both setups are in [`docs/INSTALL.md`](docs/INSTALL.md).
+Published at [`OutCode-Software/oc-githooks`](https://github.com/OutCode-Software/oc-githooks) (private). The recommended setup is Lefthook **`remotes`** — a repo's `lefthook.yml` points at `oc-githooks` pinned to `ref: v1` with `refetch_frequency: 24h`, so non-breaking updates arrive automatically when we fast-forward the `v1` tag. Copying files in is still supported for the pilot. Full mechanics and the two-tier tag policy are in [`docs/INSTALL.md`](docs/INSTALL.md) and [`docs/VERSIONING.md`](docs/VERSIONING.md).
 
 ## Design & policy background
 
-This implements the decisions in the *Outcode Git Hooks Standard — Design & Rollout Plan* and fills the open "git-hooks / pre-commit standard" item in **GitHub Governance SOP §7.4**. Protected-branch names and the commit convention are pending final ratification in the DM working session — the config enforces the union of both documented branch models until then (see [`docs/INSTALL.md`](docs/INSTALL.md#open-decisions)).
+This implements the decisions in the *Outcode Git Hooks Standard — Design & Rollout Plan* and fills the open "git-hooks / pre-commit standard" item in **GitHub Governance SOP §7.4**. Protected branches are set to `develop` / `stage` / `prod` / `main` (Governance SOP naming). The commit convention (Conventional Commits) and the warn→block dates for the ClickUp-ID / branch-name checks are pending final ratification in the DM working session (see [`docs/INSTALL.md`](docs/INSTALL.md#open-decisions)).
 
 ## License / ownership
 
