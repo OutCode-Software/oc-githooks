@@ -5,5 +5,8 @@ pre-commit:
       glob: ".github/workflows/*.{yml,yaml}"
       run: actionlint {staged_files}
     yaml-lint:
+      # `-d relaxed`: the default config false-positives on valid GitHub workflows
+      # (truthy `on:`, missing `---`, 80-char lines). Repos can add a stricter
+      # .yamllint and drop `-d relaxed`.
       glob: "*.{yml,yaml}"
-      run: yamllint {staged_files}
+      run: yamllint -d relaxed {staged_files}

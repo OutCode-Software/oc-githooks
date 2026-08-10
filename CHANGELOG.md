@@ -4,6 +4,20 @@ All notable changes to oc-githooks. Format loosely follows Keep a Changelog; ver
 
 ## [Unreleased]
 
+### Fixed (end-to-end validation pass, 2026-08-10)
+- **Coverage gates swallowed test failures** — multi-line `run:` blocks
+  (swift/flutter/kotlin/php/ruby/node/reactnative) returned the trailing echo's
+  exit code, so a failing test suite *passed* the gate. Now `<test> || exit 1`.
+- **python** coverage measured only imported modules (`--cov`); untested files were
+  invisible. Now `--cov=.`.
+- **actions** `yamllint` default config false-positived on valid GitHub workflows →
+  `yamllint -d relaxed`.
+- **php** `php-cs-fixer` rejects a multi-file path list → per-file loop.
+- **sql** stack comment showed an invalid `.sqlfluff` (missing `[sqlfluff]` header).
+- **swift** documented required `.swiftlint.yml` excluding `.build` (else it lints
+  build artifacts). Added per-stack prerequisites table to INSTALL.md.
+- Validated all 15 stacks end-to-end with real toolchains; results in VALIDATION.md.
+
 ### Changed
 - **Split the `mobile` stack into per-language overlays** — `stacks/mobile.yml`
   removed; added `stacks/flutter.yml`, `stacks/swift.yml`, `stacks/kotlin.yml`,

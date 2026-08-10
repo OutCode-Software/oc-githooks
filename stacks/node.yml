@@ -29,5 +29,5 @@ pre-push:
     node-test:
       # Jest with coverage; fails if line coverage < 25% (bar rises over time).
       run: |
-        npx --no-install jest --coverage --coverageReporters=json-summary --passWithNoTests
+        npx --no-install jest --coverage --coverageReporters=json-summary --passWithNoTests || exit 1
         node -e 'const p=require("./coverage/coverage-summary.json").total.lines.pct; if(p<25){console.error("✗ Line coverage "+p+"% is below the 25% minimum. Add tests.");process.exit(1)} console.log("✓ Coverage "+p+"%")'

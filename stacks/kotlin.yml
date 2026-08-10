@@ -22,7 +22,7 @@ pre-push:
       # Adjust the Gradle task/module as needed (e.g. :app:testDebugUnitTest).
       # Coverage enforcement requires the JaCoCo plugin producing an XML report.
       run: |
-        ./gradlew test jacocoTestReport
+        ./gradlew test jacocoTestReport || exit 1
         report=$(find . -path '*/jacoco/*.xml' 2>/dev/null | head -1)
         if [ -n "$report" ]; then
           line=$(grep -o '<counter type="LINE"[^/]*/>' "$report" | tail -1)

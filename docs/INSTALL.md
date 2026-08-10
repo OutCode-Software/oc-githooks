@@ -95,6 +95,33 @@ ship as `v2`. Full policy in [`VERSIONING.md`](VERSIONING.md).
 
 ---
 
+## Per-stack prerequisites
+
+Hooks run on **staged files** using **your repo's own toolchain**. Each stack needs
+its tools installed and, for some, a config file. Verified end-to-end — see
+[`VALIDATION.md`](VALIDATION.md).
+
+**All stacks:** gitignore build/dependency dirs (`node_modules/`, `vendor/`,
+`.build/`, `build/`, `coverage/`). If committed, the hooks will lint them.
+
+| Stack | Tools | Required config / notes |
+|---|---|---|
+| python | ruff, mypy, pytest, **pytest-cov** | coverage uses `--cov=.` (counts untested files) |
+| web | prettier, eslint, typescript, vitest, **@vitest/coverage-v8** | `tsconfig.json`, `eslint.config.js` |
+| node | prettier, eslint, typescript, jest, ts-jest | as web; set jest `collectCoverageFrom` to catch untested files |
+| reactnative | prettier, eslint, typescript, jest | as node |
+| flutter | dart, flutter | untested files may not lower coverage — use a barrel-import test |
+| swift | swiftformat, swiftlint | **`.swiftlint.yml` with `excluded: [.build, .swiftpm, Pods]`** (else it lints build output) |
+| kotlin | ktlint, gradle, JDK 17+ | JaCoCo plugin + `xml.required=true`; `./gradlew` wrapper committed |
+| php | php-cs-fixer, phpstan, phpunit | **`.php-cs-fixer(.dist).php`**, `phpstan.neon`; pcov/xdebug for coverage |
+| laravel | pint, larastan, php artisan | pcov/xdebug for `artisan test --coverage` |
+| ruby | rubocop, rspec, simplecov (ruby ≥2.7) | SimpleCov must write `coverage/.last_run.json` |
+| infra | terraform, tflint, trivy | — |
+| sql | sqlfluff | **`.sqlfluff` with a `[sqlfluff]` header + `dialect`** |
+| docker | hadolint | — |
+| shell | shfmt, shellcheck | — |
+| actions | actionlint, yamllint | uses `yamllint -d relaxed`; add a `.yamllint` to customise |
+
 ## Verifying it works
 
 ```bash

@@ -21,7 +21,7 @@ pre-push:
       # RSpec with SimpleCov; fails if line coverage < 25%.
       # SimpleCov must be enabled so it writes coverage/.last_run.json (its default).
       run: |
-        bundle exec rspec
+        bundle exec rspec || exit 1
         if [ -f coverage/.last_run.json ]; then
           pct=$(ruby -rjson -e 'r=JSON.parse(File.read("coverage/.last_run.json"))["result"]; puts (r["line"]||r["covered_percent"]||0).to_i')
           if [ "${pct:-0}" -lt 25 ]; then echo "✗ Line coverage ${pct}% is below the 25% minimum. Add tests."; exit 1; fi

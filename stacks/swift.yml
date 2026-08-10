@@ -22,7 +22,7 @@ pre-push:
       #   xcodebuild test -scheme <Scheme> -destination '<Destination>' -enableCodeCoverage YES
       # and adapt the coverage extraction below (xcrun xccov).
       run: |
-        swift test --enable-code-coverage
+        swift test --enable-code-coverage || exit 1
         prof=$(find .build -name '*.profdata' 2>/dev/null | head -1)
         bin=$(find .build -type d -name '*.xctest' 2>/dev/null | head -1)
         if [ -n "$prof" ] && [ -n "$bin" ]; then

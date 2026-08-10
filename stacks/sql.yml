@@ -1,5 +1,8 @@
 # oc-githooks/stacks/sql.yml — SQL overlay (cross-cutting; add alongside a language stack)
-# Requires a .sqlfluff config specifying your dialect (e.g. dialect = postgres).
+# Requires a .sqlfluff config with a [sqlfluff] section header, e.g.:
+#   [sqlfluff]
+#   dialect = postgres
+# (a bare "dialect = postgres" with no header makes sqlfluff crash.)
 pre-commit:
   commands:
     sql-format:

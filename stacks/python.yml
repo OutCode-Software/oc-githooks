@@ -22,5 +22,7 @@ pre-push:
       glob: "*.py"
       run: mypy .
     py-test:
+      # `--cov=.` measures ALL source (incl. untested files); bare `--cov` only
+      # measures imported modules, so untested files would be invisible to the gate.
       # Fails if line coverage < 25% (bar rises over time).
-      run: pytest -x -q --cov --cov-fail-under=25
+      run: pytest -x -q --cov=. --cov-fail-under=25

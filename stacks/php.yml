@@ -3,8 +3,12 @@
 pre-commit:
   commands:
     php-format:
+      # One path per invocation: php-cs-fixer rejects a multi-file path list
+      # ("For multiple paths config parameter is required"). Single-path calls
+      # auto-discover .php-cs-fixer(.dist).php.
       glob: "*.php"
-      run: php-cs-fixer fix {staged_files}
+      run: |
+        for f in {staged_files}; do php-cs-fixer fix "$f" || exit 1; done
       stage_fixed: true
     php-syntax:
       glob: "*.php"
@@ -24,7 +28,7 @@ pre-push:
     php-test:
       # phpunit with Clover coverage; fails if line coverage < 25%.
       run: |
-        phpunit --coverage-clover=coverage/clover.xml
+        phpunit --coverage-clover=coverage/clover.xml || exit 1
         line=$(grep -o '<metrics [^>]*>' coverage/clover.xml | tail -1)
         covered=$(printf '%s' "$line" | sed -E 's/.*coveredstatements="([0-9]+)".*/\1/')
         total=$(printf '%s' "$line" | sed -E 's/.* statements="([0-9]+)".*/\1/')
