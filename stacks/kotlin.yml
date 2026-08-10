@@ -2,13 +2,13 @@
 # Java files aren't linted by ktlint; they still get all base.yml checks.
 pre-commit:
   commands:
-    kotlin-format:
+    kotlin-lint:
+      # `ktlint -F` auto-fixes AND still exits non-zero on unfixable violations,
+      # so a single command does format + lint. A separate non-fixing lint command
+      # would race the auto-fix under pre-commit `parallel: true` and false-block.
       glob: "*.{kt,kts}"
       run: ktlint -F {staged_files}
       stage_fixed: true
-    kotlin-lint:
-      glob: "*.{kt,kts}"
-      run: ktlint {staged_files}
     kotlin-no-println:
       glob: "*.{kt,kts}"
       run: |

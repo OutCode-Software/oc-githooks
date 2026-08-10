@@ -5,10 +5,10 @@
 # (a bare "dialect = postgres" with no header makes sqlfluff crash.)
 pre-commit:
   commands:
-    sql-format:
+    sql-lint:
+      # `sqlfluff fix` auto-fixes AND still exits non-zero on unfixable violations,
+      # so a single command does format + lint. A separate non-fixing lint command
+      # would race the auto-fix under pre-commit `parallel: true` and false-block.
       glob: "*.sql"
       run: sqlfluff fix {staged_files}
       stage_fixed: true
-    sql-lint:
-      glob: "*.sql"
-      run: sqlfluff lint {staged_files}

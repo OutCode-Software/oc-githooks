@@ -20,7 +20,7 @@ on all 15. This pass **found and fixed 6 real bugs** (see below).
 | kotlin | ✅ | ✅ | ✅ gradle test | ✅ blocks 3% / passes | jacoco parser OK; no blind spot |
 | php | ✅ | ✅ (fmt/syntax/guard) | ✅ phpstan + phpunit (pcov) | ✅ blocks 4% / passes (live) | fixed multi-path php-cs-fixer; pcov has untested-file blind spot |
 | laravel | ✅ | ✅ pint + dd guard | ⏳ `artisan test` needs Laravel app+driver | — | pint+guard live |
-| ruby | ✅ | ⏳ rubocop needs ruby≥2.7 (sys 2.6) | ⏳ | ✅ SimpleCov parser (synthetic) | live pending modern ruby |
+| ruby | ✅ | ✅ rubocop -A + guard (ruby 4.0) | ✅ rspec | ✅ blocks 7% / passes 80% (live) | fixed format/lint parallel race |
 | infra | ✅ | ✅ fmt autofix + trivy | ✅ validate/tflint | n/a | — |
 | docker | ✅ | ✅ hadolint pass/block | n/a | n/a | — |
 | shell | ✅ | ✅ shfmt+shellcheck | n/a | n/a | — |
@@ -39,6 +39,10 @@ on all 15. This pass **found and fixed 6 real bugs** (see below).
    `yamllint -d relaxed`.
 5. **php** `php-cs-fixer fix <file-list>` errors on multiple paths. Fixed to a per-file loop.
 6. **sql** stack comment showed an invalid `.sqlfluff` (no `[sqlfluff]` header → crash). Fixed.
+7. **Format/lint parallel race** (ruby/kotlin/sql) — pre-commit runs `parallel: true`, so a
+   separate non-fixing lint command raced the auto-fixer and read the *pre-fix* file, false-blocking
+   a commit that just needed formatting. Collapsed each into one auto-fixing command
+   (`rubocop -A` / `ktlint -F` / `sqlfluff fix`) that also exits non-zero on unfixable offenses.
 
 ### Coverage "untested file" blind spot (by tool)
 A gate only sees code the tests touch unless the tool is told to include all sources:

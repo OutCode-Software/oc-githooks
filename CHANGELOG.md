@@ -16,6 +16,9 @@ All notable changes to oc-githooks. Format loosely follows Keep a Changelog; ver
 - **sql** stack comment showed an invalid `.sqlfluff` (missing `[sqlfluff]` header).
 - **swift** documented required `.swiftlint.yml` excluding `.build` (else it lints
   build artifacts). Added per-stack prerequisites table to INSTALL.md.
+- **Format/lint parallel race** (ruby/kotlin/sql) — under pre-commit `parallel: true`
+  a separate lint command raced the auto-fixer and false-blocked commits needing
+  formatting. Collapsed to one auto-fixing command (`rubocop -A`/`ktlint -F`/`sqlfluff fix`).
 - Validated all 15 stacks end-to-end with real toolchains; results in VALIDATION.md.
 
 ### Changed

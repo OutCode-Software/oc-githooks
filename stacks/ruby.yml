@@ -1,13 +1,13 @@
 # oc-githooks/stacks/ruby.yml — Ruby / Rails overlay (merges onto base.yml)
 pre-commit:
   commands:
-    ruby-format:
+    ruby-lint:
+      # `rubocop -A` auto-corrects AND still exits non-zero on remaining offenses,
+      # so a single command does format + lint. A separate non-fixing lint command
+      # would race the auto-fix under pre-commit `parallel: true` and false-block.
       glob: "*.rb"
       run: bundle exec rubocop -A {staged_files}
       stage_fixed: true
-    ruby-lint:
-      glob: "*.rb"
-      run: bundle exec rubocop {staged_files}
     ruby-no-debug:
       glob: "*.rb"
       run: |
