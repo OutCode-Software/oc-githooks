@@ -34,9 +34,14 @@ Every hook we run today, plus the full menu of what git hooks *can* do and what 
 
 ### Per-stack layers
 
-- **Python** (`stacks/python.yml`): `ruff format` + `ruff check --fix` (pre-commit), no `pdb`/`breakpoint()`/`ipdb`; `mypy` + `pytest -x -q` (pre-push).
-- **Web** (`stacks/web.yml`): `prettier --write` + `eslint --fix` (pre-commit), no `debugger`, no `.only` focused tests; `tsc --noEmit` + `vitest run --changed` (pre-push).
-- **Mobile** (`stacks/mobile.yml`): `dart format` + `dart analyze` (pre-commit), warn on `print()`; `flutter analyze` + `flutter test` (pre-push).
+All test-running stacks enforce a **≥25% line-coverage gate** on pre-push (a deliberately low starting bar that rises over time).
+
+- **Python** (`stacks/python.yml`): `ruff format` + `ruff check --fix` (pre-commit), no `pdb`/`breakpoint()`/`ipdb`; `mypy` + `pytest -x -q --cov --cov-fail-under=25` (pre-push).
+- **Web** (`stacks/web.yml`): `prettier --write` + `eslint --fix` (pre-commit), no `debugger`, no `.only` focused tests; `tsc --noEmit` + `vitest run --coverage` (25% gate) (pre-push).
+- **Flutter** (`stacks/flutter.yml`): `dart format` + `dart analyze` (pre-commit), warn on `print()`; `flutter analyze` + `flutter test --coverage` (25% gate) (pre-push).
+- **Swift** (`stacks/swift.yml`): `swiftformat` (pre-commit), warn on stray `print(`; `swiftlint --strict` + `swift test` (25% gate) (pre-push). Obj-C files get base-only coverage. Xcode-app repos swap `swift test` for `xcodebuild test` (see file comment).
+- **Kotlin** (`stacks/kotlin.yml`): `ktlint -F` + `ktlint` (pre-commit), warn on `println(`; `./gradlew test` + JaCoCo (25% gate) (pre-push). Java files get base-only coverage.
+- **React Native** (`stacks/reactnative.yml`): `prettier --write` + `eslint --fix` (pre-commit), no `debugger`, no `.only` tests, warn on `console.log`; `tsc --noEmit` + `jest --coverage` (25% gate) (pre-push). Native shells: add `swift`/`kotlin` alongside.
 - **Infra** (`stacks/infra.yml`): `terraform fmt` + block `.tfstate`/`.terraform/` + `trivy config` (pre-commit); `terraform validate` + `tflint` (pre-push).
 
 ---
@@ -78,7 +83,10 @@ Git has no client hook that fires *after* a push. The client push lifecycle ends
 **base pre-commit:** case-insensitive filename-collision guard · non-ASCII filename guard · TODO/FIXME-without-ticket warn · lockfile/manifest in-sync check.
 **Python:** `no print()` warn · `bandit` quick SAST on staged files · forbid bare `# type: ignore`.
 **Web:** `console.log` warn · block imports from `dist/` · package-lock in-sync check.
-**Mobile:** `pubspec.lock` committed check · forbid `// ignore:` without a reason.
+**Flutter:** `pubspec.lock` committed check · forbid `// ignore:` without a reason.
+**Swift:** forbid committed `*.xcuserstate` / `DerivedData/` · block `fatalError(` in non-test code.
+**Kotlin:** forbid committed `local.properties` · block leftover `@Ignore` on tests.
+**React Native:** forbid committed `ios/Pods/` · block committed `.env` bundles.
 **Infra:** forbid `*.tfvars` with obvious secrets · require provider lockfile.
 **commit-msg:** make ClickUp-ID a *block* after grace period · forbid trailing period · imperative-mood lint.
 **pre-push:** Gitleaks over the outgoing commit range (catches `--no-verify` commits) · block force-push to shared branches.

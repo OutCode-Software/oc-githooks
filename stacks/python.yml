@@ -22,4 +22,5 @@ pre-push:
       glob: "*.py"
       run: mypy .
     py-test:
-      run: pytest -x -q
+      # Fails if line coverage < 25% (bar rises over time).
+      run: pytest -x -q --cov --cov-fail-under=25

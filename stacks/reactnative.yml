@@ -1,0 +1,40 @@
+# oc-githooks/stacks/reactnative.yml — React Native (JS/TS) overlay (merges onto base.yml)
+# Native iOS/Android shells: add stacks/swift.yml and/or stacks/kotlin.yml alongside this.
+pre-commit:
+  commands:
+    rn-format:
+      glob: "*.{ts,tsx,js,jsx,json}"
+      run: npx --no-install prettier --write {staged_files}
+      stage_fixed: true
+    rn-lint:
+      glob: "*.{ts,tsx,js,jsx}"
+      run: npx --no-install eslint --fix {staged_files}
+      stage_fixed: true
+    rn-no-debugger:
+      glob: "*.{ts,tsx,js,jsx}"
+      run: |
+        if grep -HnE '(^|[^A-Za-z0-9_])debugger([^A-Za-z0-9_]|$)' {staged_files}; then
+          echo "✗ Remove 'debugger' statements before committing."; exit 1
+        fi
+    rn-no-console:
+      glob: "*.{ts,tsx,js,jsx}"
+      run: |
+        if grep -HnE '(^|[^A-Za-z0-9_.])console\.(log|debug)\(' {staged_files}; then
+          echo "⚠ Remove console.log/debug before committing (ships to the Metro bundle)."
+        fi
+    rn-no-focused-tests:
+      glob: "*.{test,spec}.{ts,tsx,js,jsx}"
+      run: |
+        if grep -HnE '\b(describe|it|test|context)\.only\b' {staged_files}; then
+          echo "✗ Remove .only from tests — it silently skips the rest of the suite."; exit 1
+        fi
+pre-push:
+  parallel: false
+  commands:
+    rn-typecheck:
+      run: npx --no-install tsc --noEmit
+    rn-test:
+      # Jest with coverage; fails if line coverage < 25% (bar rises over time).
+      run: |
+        npx --no-install jest --coverage --coverageReporters=json-summary --passWithNoTests
+        node -e 'const p=require("./coverage/coverage-summary.json").total.lines.pct; if(p<25){console.error("✗ Line coverage "+p+"% is below the 25% minimum. Add tests.");process.exit(1)} console.log("✓ Coverage "+p+"%")'

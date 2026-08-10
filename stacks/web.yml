@@ -12,7 +12,7 @@ pre-commit:
     web-no-debugger:
       glob: "*.{ts,tsx,js,jsx,mjs,cjs}"
       run: |
-        if grep -HnE '(^|[^A-Za-z0-9_])debugger[[:space:]]*;?' {staged_files}; then
+        if grep -HnE '(^|[^A-Za-z0-9_])debugger([^A-Za-z0-9_]|$)' {staged_files}; then
           echo "✗ Remove 'debugger' statements before committing."; exit 1
         fi
     web-no-focused-tests:
@@ -27,4 +27,5 @@ pre-push:
     web-typecheck:
       run: npx --no-install tsc --noEmit
     web-test:
-      run: npx --no-install vitest run --changed
+      # Full run with coverage so the 25% gate is meaningful (bar rises over time).
+      run: npx --no-install vitest run --coverage --coverage.thresholds.lines=25

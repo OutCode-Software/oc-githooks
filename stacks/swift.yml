@@ -1,0 +1,37 @@
+# oc-githooks/stacks/swift.yml — iOS / Swift overlay (merges onto base.yml)
+# Objective-C files aren't linted here; they still get all base.yml checks.
+pre-commit:
+  commands:
+    swift-format:
+      glob: "*.swift"
+      run: swiftformat {staged_files}
+      stage_fixed: true
+    swift-no-print:
+      glob: "*.swift"
+      run: |
+        if grep -HnE '(^|[^A-Za-z0-9_.])print\(' {staged_files}; then
+          echo "⚠ Avoid stray print() in Swift — use os.Logger / a logging framework."
+        fi
+pre-push:
+  parallel: false
+  commands:
+    swift-lint:
+      run: swiftlint --strict
+    swift-test:
+      # SPM default. Xcode app repos: replace the test command with e.g.
+      #   xcodebuild test -scheme <Scheme> -destination '<Destination>' -enableCodeCoverage YES
+      # and adapt the coverage extraction below (xcrun xccov).
+      run: |
+        swift test --enable-code-coverage
+        prof=$(find .build -name '*.profdata' 2>/dev/null | head -1)
+        bin=$(find .build -type d -name '*.xctest' 2>/dev/null | head -1)
+        if [ -n "$prof" ] && [ -n "$bin" ]; then
+          pct=$(xcrun llvm-cov report "$bin"/Contents/MacOS/* -instr-profile "$prof" 2>/dev/null \
+            | awk '/^TOTAL/{for(i=NF;i>=1;i--) if($i ~ /%$/){gsub("%","",$i); print int($i); break}}')
+          if [ "${pct:-0}" -lt 25 ]; then
+            echo "✗ Line coverage ${pct}% is below the 25% minimum. Add tests."; exit 1
+          fi
+          echo "✓ Coverage ${pct}% (>=25%)"
+        else
+          echo "⚠ Coverage data not found — adjust swift-test for your project (see comment above)."
+        fi

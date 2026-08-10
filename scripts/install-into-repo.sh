@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Usage: scripts/install-into-repo.sh <stack> <path-to-target-repo>
-#   <stack> = python | web | mobile | infra
+#   <stack> = python | web | flutter | swift | kotlin | reactnative | infra
 set -euo pipefail
-STACK="${1:?stack required: python|web|mobile|infra}"
+STACK="${1:?stack required: python|web|flutter|swift|kotlin|reactnative|infra}"
 TARGET="${2:?target repo path required}"
 HERE="$(cd "$(dirname "$0")/.." && pwd)"
 
-case "$STACK" in python|web|mobile|infra) ;; *) echo "Unknown stack: $STACK"; exit 1;; esac
+case "$STACK" in python|web|flutter|swift|kotlin|reactnative|infra) ;; *) echo "Unknown stack: $STACK"; exit 1;; esac
 [ -d "$TARGET/.git" ] || { echo "✗ $TARGET is not a git repo"; exit 1; }
 
 mkdir -p "$TARGET/.githooks/stacks"

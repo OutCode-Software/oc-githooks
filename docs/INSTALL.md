@@ -22,7 +22,7 @@ Verify: `lefthook version` and `gitleaks version`.
 Fastest path, no external dependency. From the `oc-githooks` folder:
 
 ```bash
-scripts/install-into-repo.sh <python|web|mobile|infra> /path/to/your/repo
+scripts/install-into-repo.sh <python|web|flutter|swift|kotlin|reactnative|infra> /path/to/your/repo
 ```
 
 This copies:
@@ -55,20 +55,35 @@ extends:
 
 ---
 
-## Option B — `remotes` (after oc-githooks is published to GitHub)
+## Option B — `remotes` (recommended standard, now published)
 
-No copied files; pull the base + stack straight from the central repo, pinned to a tag. Replace your `lefthook.yml` with:
+No copied files: Lefthook pulls `base.yml` + your stack straight from the central
+`oc-githooks` repo and merges them locally. Your repo holds only this pointer.
+Replace your `lefthook.yml` with:
 
 ```yaml
 remotes:
-  - git_url: https://github.com/OutCode-Software/oc-githooks
-    ref: v1                     # pin to a tag; bump deliberately to adopt updates
+  - git_url: git@github.com:OutCode-Software/oc-githooks   # SSH — repo is PRIVATE
+    ref: v1                     # rolling major tag; see docs/VERSIONING.md
+    refetch_frequency: 24h      # re-pull the ref at most once/day
     configs:
       - base.yml
-      - stacks/web.yml          # your stack
+      - stacks/web.yml          # your stack (flutter | swift | kotlin | reactnative | python | infra)
 ```
 
-Then `lefthook install`. Updating everyone is a one-line tag bump in each repo (or org automation).
+Then `lefthook install`. Lefthook shallow-clones the ref into `.git/info/lefthook-remotes/`
+(local cache, not committed) and merges the configs. Hooks then run from that cache
+with no per-commit network call.
+
+> **Private-repo auth.** Because `oc-githooks` is private, Lefthook clones it with the
+> developer's own git credentials — use the **SSH** `git_url` above so each dev's SSH key
+> works transparently. **CI** needs its own access: give the `git-hooks-mirror` workflow a
+> deploy key or a PAT with read access to `oc-githooks`, or it can't fetch the remote.
+
+**Getting updates:** with `ref: v1` + `refetch_frequency: 24h`, non-breaking updates
+arrive automatically within a day (we fast-forward the `v1` tag on each release). Pin an
+exact tag (`ref: v1.2.0`) for reproducible builds and bump deliberately. Breaking changes
+ship as `v2`. Full policy in [`VERSIONING.md`](VERSIONING.md).
 
 ---
 

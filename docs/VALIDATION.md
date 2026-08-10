@@ -1,6 +1,15 @@
 # Validation
 
-Everything in this repo was **validated by execution**, not by inspection — Lefthook 2.1.10, Gitleaks 8.21.2, git 2.x on Linux, against throwaway repos and a real bare remote. `lefthook validate` returns **All good** on `base.yml` and all four stack files. A clean commit runs in ~0.3s.
+Everything in this repo was **validated by execution**, not by inspection — Lefthook 2.1.10, Gitleaks 8.21.2, git 2.x on Linux, against throwaway repos and a real bare remote. `lefthook validate` returns **All good** on `base.yml` and the original stack files (`python`, `web`, `infra`). A clean commit runs in ~0.3s.
+
+> **Mobile split (v1.x, 2026-08-10).** `mobile.yml` was replaced by per-language
+> stacks: `flutter`, `swift`, `kotlin`, `reactnative`. Their YAML parses cleanly
+> and every **pattern-based guard** below is validated (block + near-miss). The
+> **tool-dependent** commands (`swiftformat`/`swiftlint`, `ktlint`, `flutter test`,
+> `jest --coverage`, and the ≥25% coverage gates) are the documented commands but
+> have **not yet been run end-to-end** — pending a machine with those toolchains
+> installed (same open caveat as `ruff`/`terraform`). `lefthook validate` on the new
+> files is likewise pending (Lefthook not installed in the authoring environment).
 
 ## Commit matrix (base)
 
@@ -40,8 +49,11 @@ Everything in this repo was **validated by execution**, not by inspection — Le
 | Guard | blocks | allows (no false positive) |
 |---|---|---|
 | Python `breakpoint()` / `import pdb` / `import ipdb` | ✅ | `# comment mentioning pdb` |
-| Web `debugger;` | ✅ | `"…debugger…"` inside a string |
-| Web `describe.only` / `it.only` | ✅ | a normal `describe/it` |
+| Web / RN `debugger` (statement, EOL, `debugger()`) | ✅ | `debuggerUtil`, `mydebugger` (fixed: trailing boundary) |
+| Web / RN `describe.only` / `it.only` | ✅ | a normal `describe/it`; `const onlyThing` |
+| Flutter / Swift `print(` | ✅ (warn) | `debugPrint(`, `sprint(` |
+| Kotlin `println(` | ✅ (warn) | `myprintln(` |
+| React Native `console.log` / `console.debug` | ✅ (warn) | `console.error`, `myconsole.log` |
 | Infra `*.tfstate` / `.terraform/` | ✅ | regular `*.tf` files |
 
 ## Notable findings from validation

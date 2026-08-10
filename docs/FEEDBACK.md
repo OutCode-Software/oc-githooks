@@ -5,7 +5,7 @@ Trialling oc-githooks on a real repo? Please copy the block below into a ClickUp
 ```markdown
 ## Pilot feedback — oc-githooks
 
-**Repo:**            <name + stack: python / web / mobile / infra>
+**Repo:**            <name + stack: python / web / flutter / swift / kotlin / reactnative / infra>
 **Reviewer:**        <your position/title>
 **Lefthook / Gitleaks versions:**  <lefthook version> / <gitleaks version>
 **OS:**              <macOS / Linux / WSL>

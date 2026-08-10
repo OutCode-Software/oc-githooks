@@ -1,0 +1,41 @@
+# oc-githooks/stacks/kotlin.yml — Android / Kotlin overlay (merges onto base.yml)
+# Java files aren't linted by ktlint; they still get all base.yml checks.
+pre-commit:
+  commands:
+    kotlin-format:
+      glob: "*.{kt,kts}"
+      run: ktlint -F {staged_files}
+      stage_fixed: true
+    kotlin-lint:
+      glob: "*.{kt,kts}"
+      run: ktlint {staged_files}
+    kotlin-no-println:
+      glob: "*.{kt,kts}"
+      run: |
+        if grep -HnE '(^|[^A-Za-z0-9_.])println\(' {staged_files}; then
+          echo "⚠ Avoid println() in Android — use android.util.Log / Timber."
+        fi
+pre-push:
+  parallel: false
+  commands:
+    kotlin-test:
+      # Adjust the Gradle task/module as needed (e.g. :app:testDebugUnitTest).
+      # Coverage enforcement requires the JaCoCo plugin producing an XML report.
+      run: |
+        ./gradlew test jacocoTestReport
+        report=$(find . -path '*/jacoco/*.xml' 2>/dev/null | head -1)
+        if [ -n "$report" ]; then
+          line=$(grep -o '<counter type="LINE"[^/]*/>' "$report" | tail -1)
+          missed=$(printf '%s' "$line" | sed -E 's/.*missed="([0-9]+)".*/\1/')
+          covered=$(printf '%s' "$line" | sed -E 's/.*covered="([0-9]+)".*/\1/')
+          total=$((missed + covered))
+          if [ "$total" -gt 0 ]; then
+            pct=$((covered * 100 / total))
+            if [ "$pct" -lt 25 ]; then
+              echo "✗ Line coverage ${pct}% is below the 25% minimum. Add tests."; exit 1
+            fi
+            echo "✓ Coverage ${pct}% (>=25%)"
+          fi
+        else
+          echo "⚠ No JaCoCo XML report found — add the jacoco plugin to enforce coverage."
+        fi

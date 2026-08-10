@@ -24,7 +24,7 @@ On **push** (`pre-push`):
 - 🧹 Blocks pushing **WIP / fixup! / squash!** commits; warns on non-standard branch names.
 - Runs the stack's **type-check + tests** (see each stack layer).
 
-Per-stack extras: **Python** (ruff format/lint, mypy, pytest, no `pdb`/`breakpoint()`), **Web** (prettier, eslint, tsc, vitest, no `debugger`, no `.only` focused tests), **Mobile** (dart format/analyze, flutter test), **Infra** (terraform fmt/validate, tflint, trivy, no committed state). Full list in [`docs/HOOKS_CATALOG.md`](docs/HOOKS_CATALOG.md).
+Per-stack extras: **Python** (ruff format/lint, mypy, pytest), **Web** (prettier, eslint, tsc, vitest, no `debugger`, no `.only` focused tests), **Flutter** (dart format/analyze, flutter test), **Swift** (swiftformat, swiftlint, swift test), **Kotlin** (ktlint, gradle test), **React Native** (prettier, eslint, tsc, jest, no `debugger`/`console.log`), **Infra** (terraform fmt/validate, tflint, trivy, no committed state). Test stacks enforce a **≥25% coverage gate** on pre-push. Full list in [`docs/HOOKS_CATALOG.md`](docs/HOOKS_CATALOG.md).
 
 Everything here was **validated by execution** (lefthook 2.1.10, gitleaks 8.21.2) — see [`docs/VALIDATION.md`](docs/VALIDATION.md).
 
@@ -35,7 +35,7 @@ Everything here was **validated by execution** (lefthook 2.1.10, gitleaks 8.21.2
 From this folder, install into a target repo in one command:
 
 ```bash
-scripts/install-into-repo.sh <python|web|mobile|infra> /path/to/your/repo
+scripts/install-into-repo.sh <python|web|flutter|swift|kotlin|reactnative|infra> /path/to/your/repo
 ```
 
 Then, in your repo:
@@ -58,7 +58,10 @@ oc-githooks/
 ├── stacks/
 │   ├── python.yml            # Python / FastAPI layer
 │   ├── web.yml               # Next.js / TypeScript layer
-│   ├── mobile.yml            # Flutter / Dart layer
+│   ├── flutter.yml           # Flutter / Dart layer
+│   ├── swift.yml             # iOS / Swift layer
+│   ├── kotlin.yml            # Android / Kotlin layer
+│   ├── reactnative.yml       # React Native (JS/TS) layer
 │   └── infra.yml             # Terraform / IaC layer
 ├── examples/                 # per-repo lefthook.yml to copy (uses `extends`)
 ├── ci/hooks.yml              # CI mirror — copy to .github/workflows/

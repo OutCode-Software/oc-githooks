@@ -2,6 +2,30 @@
 
 All notable changes to oc-githooks. Format loosely follows Keep a Changelog; versions are the tags repos pin to via `remotes`.
 
+## [Unreleased]
+
+### Changed
+- **Split the `mobile` stack into per-language overlays** — `stacks/mobile.yml`
+  removed; added `stacks/flutter.yml`, `stacks/swift.yml`, `stacks/kotlin.yml`,
+  `stacks/reactnative.yml` (+ matching `examples/lefthook.<stack>.yml`). The old
+  `mobile` overlay was Flutter-only and its unguarded `flutter` pre-push commands
+  misfired in native repos. Install script + all docs updated.
+- **Coverage gate on pre-push** — every test-running stack now enforces a **≥25%
+  line-coverage** minimum (deliberately low; rises over time). Retrofitted `web`
+  (`vitest --coverage`) and `python` (`pytest --cov-fail-under=25`).
+- **Fixed a `debugger` false positive** in `web`/`reactnative` — the guard now uses
+  a trailing boundary so `debuggerUtil`/`mydebugger` no longer trip it.
+
+### Added
+- **docs/VERSIONING.md** — two-tier tag scheme (immutable `v1.x.y` + rolling `v1`),
+  `refetch_frequency` update mechanism, and the maintainer release checklist.
+- **docs/INSTALL.md** — `remotes` is now the recommended standard: SSH `git_url`
+  (repo is private), `refetch_frequency: 24h`, and CI deploy-key/PAT guidance.
+
+### Pending
+- Run the new stack overlays end-to-end with real toolchains (swiftformat/swiftlint,
+  ktlint, flutter, jest) and `lefthook validate`; record results in `docs/VALIDATION.md`.
+
 ## [v1] — 2026-08-10
 
 First tagged release. Published to `OutCode-Software/oc-githooks`; repos can now
