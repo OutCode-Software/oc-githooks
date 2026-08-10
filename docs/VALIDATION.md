@@ -18,7 +18,7 @@ on all 15. This pass **found and fixed 6 real bugs** (see below).
 | flutter | ✅ | ✅ | ✅ flutter test | ✅ blocks 6% / passes 50% | lcov parser OK; untested-file blind spot |
 | swift | ✅ | ✅ | ✅ swift test | ✅ llvm-cov reads line% (89.66) | needs `.swiftlint.yml` excl `.build`; fixed failure-swallow |
 | kotlin | ✅ | ✅ | ✅ gradle test | ✅ blocks 3% / passes | jacoco parser OK; no blind spot |
-| php | ✅ | ✅ (fmt/syntax/guard) | ⏳ phpstan+phpunit need pcov/xdebug | ✅ clover parser (synthetic) | fixed multi-path php-cs-fixer |
+| php | ✅ | ✅ (fmt/syntax/guard) | ✅ phpstan + phpunit (pcov) | ✅ blocks 4% / passes (live) | fixed multi-path php-cs-fixer; pcov has untested-file blind spot |
 | laravel | ✅ | ✅ pint + dd guard | ⏳ `artisan test` needs Laravel app+driver | — | pint+guard live |
 | ruby | ✅ | ⏳ rubocop needs ruby≥2.7 (sys 2.6) | ⏳ | ✅ SimpleCov parser (synthetic) | live pending modern ruby |
 | infra | ✅ | ✅ fmt autofix + trivy | ✅ validate/tflint | n/a | — |
@@ -44,8 +44,9 @@ on all 15. This pass **found and fixed 6 real bugs** (see below).
 A gate only sees code the tests touch unless the tool is told to include all sources:
 **python** (fixed via `--cov=.`), **web/vitest** (includes all — no blind spot),
 **kotlin/jacoco** & **swift/llvm-cov** (include the whole target — no blind spot),
-**flutter/lcov** & **jest** (node/RN) & **ruby/SimpleCov** — blind spot remains; a wholly
-untested file may not lower the %. Documented in each stack; teams should configure
+**flutter/lcov** & **jest** (node/RN) & **ruby/SimpleCov** & **php/pcov** — blind spot
+remains; a wholly untested (never-loaded) file may not lower the %. (php with Xdebug +
+`includeUncoveredFiles` avoids it.) Documented in each stack; teams should configure
 `collectCoverageFrom` (jest) / a barrel-import test (flutter) / SimpleCov filters as needed.
 
 ## Commit matrix (base)
