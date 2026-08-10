@@ -2,6 +2,22 @@
 
 All notable changes to oc-githooks. Format loosely follows Keep a Changelog; versions are the tags repos pin to via `remotes`.
 
+## [v2.1.0] — 2026-08-11
+
+### Added
+- **`scripts/adopt-remotes.sh`** — one-command `remotes` (auto-update) setup:
+  writes the `remotes` `lefthook.yml`, copies `.gitleaks.toml` (remotes can't fetch
+  it), drops starter tool configs, gitignores generated dirs, runs `lefthook install`,
+  and **verifies the remote actually fetched**. Overridable via `OC_GIT_URL`/`OC_REF`.
+- **Cross-platform tool-install matrix** + `.mise.toml` pinning guidance in INSTALL.md
+  (`brew` is macOS-only; added Windows/Linux/npm/mise paths).
+
+### Documented (important gotcha)
+- **A failed `remotes` fetch fails silently** — Lefthook prints `Couldn't sync … Will
+  continue anyway`, exits 0 with **empty hooks**, and `lefthook validate` still says
+  "All good". Verify via `.git/info/lefthook-remotes/<repo>-<ref>/base.yml` (or just use
+  `adopt-remotes.sh`, which checks). Do **not** trust `lefthook validate` for this.
+
 ## [v2.0.0] — 2026-08-11
 
 **Breaking:** `stacks/mobile.yml` was removed (split into per-language stacks).

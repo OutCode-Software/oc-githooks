@@ -4,13 +4,21 @@ Two prerequisites, then pick **A** (copy — recommended for the pilot) or **B**
 
 ## Prerequisites (once per machine)
 
-```bash
-# macOS
-brew install lefthook gitleaks
+Install **lefthook** + **gitleaks**. `brew` is macOS-only, so use your platform's:
 
-# or, cross-platform via npm (lefthook) + binary (gitleaks)
-npm install -g lefthook
-# gitleaks: https://github.com/gitleaks/gitleaks/releases  (or `brew install gitleaks`)
+| OS | lefthook | gitleaks |
+|---|---|---|
+| macOS | `brew install lefthook` | `brew install gitleaks` |
+| Windows | `winget install evilmartians.lefthook` (or scoop/choco) | `winget install gitleaks` |
+| Linux (Debian/Ubuntu) | `curl -1sLf 'https://dl.cloudsmith.io/public/evilmartians/lefthook/setup.deb.sh' \| sudo -E bash && sudo apt install lefthook` | download `linux_x64` from [releases](https://github.com/gitleaks/gitleaks/releases) → put on `PATH` |
+| Any OS (Node) | `npm install -g lefthook` | — (still need the gitleaks binary) |
+
+**Pin versions for the whole team** (recommended): commit a `.mise.toml` and run `mise install`:
+
+```toml
+[tools]
+lefthook = "2.1.10"
+gitleaks = "8.30.1"
 ```
 
 Verify: `lefthook version` and `gitleaks version`.
@@ -59,7 +67,19 @@ extends:
 
 No copied files: Lefthook pulls `base.yml` + your stack straight from the central
 `oc-githooks` repo and merges them locally. Your repo holds only this pointer.
-Replace your `lefthook.yml` with:
+
+**One-command setup** (from a clone of `oc-githooks`):
+
+```bash
+scripts/adopt-remotes.sh <stack> /path/to/your/repo
+```
+
+It writes the `remotes` `lefthook.yml`, copies `.gitleaks.toml`, drops any starter
+tool configs, gitignores generated dirs, runs `lefthook install`, and — crucially —
+**verifies the remote actually fetched** (see the warning below). Override the URL/ref
+with `OC_GIT_URL=` / `OC_REF=`.
+
+To do it by hand instead, replace your `lefthook.yml` with:
 
 ```yaml
 remotes:
@@ -83,10 +103,19 @@ Then `lefthook install`. Lefthook shallow-clones the ref into `.git/info/lefthoo
 (local cache, not committed) and merges the configs. Hooks then run from that cache
 with no per-commit network call.
 
+> ⚠️ **A failed remote fetch fails SILENTLY.** If Lefthook can't reach the repo (no
+> access, wrong URL), it prints `Couldn't sync … Will continue anyway`, **exits 0, and
+> leaves your hooks EMPTY** — and `lefthook validate` still says "All good". You get zero
+> protection with no obvious error. **Verify the fetch worked:** confirm
+> `.git/info/lefthook-remotes/oc-githooks-<ref>/base.yml` exists, or just use
+> `adopt-remotes.sh` (it checks for you). Don't rely on `lefthook validate`.
+
 > **Private-repo auth.** Because `oc-githooks` is private, Lefthook clones it with the
-> developer's own git credentials — use the **SSH** `git_url` above so each dev's SSH key
-> works transparently. **CI** needs its own access: give the `git-hooks-mirror` workflow a
-> deploy key or a PAT with read access to `oc-githooks`, or it can't fetch the remote.
+> developer's own git credentials. Default is the **SSH** `git_url`; if your team auths
+> to GitHub over **HTTPS** (credential helper / `gh`), use the `https://…` URL instead
+> (`OC_GIT_URL=https://github.com/OutCode-Software/oc-githooks`). Confirm access first:
+> `git ls-remote <git_url> v2`. **CI** needs its own access: give the `git-hooks-mirror`
+> workflow a deploy key or a PAT with read access to `oc-githooks`.
 
 **Getting updates:** with `ref: v2` + `refetch_frequency: 24h`, non-breaking updates
 arrive automatically within a day (we fast-forward the rolling major tag on each release). Pin an

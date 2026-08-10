@@ -76,7 +76,8 @@ oc-githooks/
 ├── examples/                 # per-repo lefthook.yml to copy (uses `extends`)
 ├── configs/                  # starter tool configs (.swiftlint.yml, .sqlfluff, …)
 ├── ci/hooks.yml              # CI mirror — copy to .github/workflows/
-├── scripts/install-into-repo.sh
+├── scripts/install-into-repo.sh   # copy method
+├── scripts/adopt-remotes.sh       # one-command `remotes` (auto-update) setup
 ├── .gitleaks.toml            # secret-scan allowlist template
 └── docs/
     ├── INSTALL.md            # detailed install, `remotes` path, per-stack prerequisites
