@@ -1,0 +1,115 @@
+# Reusable CI mirror for oc-githooks adopters.
+#
+# This lives ONCE here. A project opts in with a tiny caller workflow (see the bottom
+# of this file / docs/CI.md) — GitHub only runs workflows that physically live in the
+# project, so each repo needs that small caller, but the logic below is central and
+# updates via the @v2 tag.
+#
+# It runs the SAME checks as the local hooks, server-side and un-bypassable:
+#   full-history gitleaks scan + `lefthook run` over base + the stack.
+#
+# NOT YET run end-to-end in GitHub Actions — validate on a throwaway repo before relying
+# on it. Projects with custom setup (codegen, private deps) may need to extend it.
+name: oc-githooks mirror
+
+on:
+  workflow_call:
+    inputs:
+      stack:
+        description: "language stack: flutter | web | node | reactnative | python | (other = base-only)"
+        required: true
+        type: string
+      ref:
+        description: "oc-githooks tag to pull (match your lefthook.yml)"
+        required: false
+        default: "v2"
+        type: string
+    secrets:
+      OC_GITHOOKS_TOKEN:
+        description: "PAT / fine-grained token with read access to the private oc-githooks repo"
+        required: true
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0            # full history for the secret scan
+
+      # Let Lefthook clone the PRIVATE oc-githooks remote over HTTPS.
+      # Pass the token via env (not inline ${{ }}) so it isn't embedded in the command.
+      - name: Authenticate to oc-githooks
+        env:
+          OC_TOKEN: ${{ secrets.OC_GITHOOKS_TOKEN }}
+        run: |
+          git config --global \
+            url."https://x-access-token:${OC_TOKEN}@github.com/".insteadOf \
+            "https://github.com/"
+
+      # ---- per-stack toolchain (only the matching one runs) ----
+      - name: Setup Flutter
+        if: inputs.stack == 'flutter'
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Flutter deps
+        if: inputs.stack == 'flutter'
+        run: flutter pub get
+
+      - name: Setup Node
+        if: contains(fromJSON('["web","node","reactnative"]'), inputs.stack)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Node deps
+        if: contains(fromJSON('["web","node","reactnative"]'), inputs.stack)
+        run: npm ci
+
+      - name: Setup Python
+        if: inputs.stack == 'python'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Python deps
+        if: inputs.stack == 'python'
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff mypy pytest pytest-cov
+          [ -f requirements.txt ] && pip install -r requirements.txt || true
+
+      # ---- lefthook + gitleaks ----
+      - name: Install lefthook + gitleaks
+        run: |
+          npm install -g lefthook
+          GL=8.30.1
+          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/v${GL}/gitleaks_${GL}_linux_x64.tar.gz" \
+            | tar -xz -C /usr/local/bin gitleaks
+
+      - name: Fetch hooks config (lefthook remote)
+        run: |
+          lefthook install
+          find .git/info/lefthook-remotes -name base.yml | grep -q . \
+            || { echo "✗ oc-githooks remote did not fetch — check OC_GITHOOKS_TOKEN"; exit 1; }
+
+      - name: Full-history secret scan
+        run: gitleaks git --redact --verbose
+
+      - name: Run hooks over all files
+        run: |
+          lefthook run pre-commit --all-files --force
+          lefthook run commit-msg  --all-files --force || true
+          lefthook run pre-push    --all-files --force
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Caller — copy THIS into each project as .github/workflows/hooks.yml (one-time):
+#
+#   name: git-hooks-mirror
+#   on:
+#     pull_request:
+#     push: { branches: [develop, stage, prod, main] }
+#   jobs:
+#     mirror:
+#       uses: OutCode-Software/oc-githooks/.github/workflows/mirror.yml@v2
+#       with: { stack: flutter }     # your stack
+#       secrets: inherit             # provides OC_GITHOOKS_TOKEN (org/repo secret)

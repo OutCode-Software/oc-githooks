@@ -2,6 +2,17 @@
 
 All notable changes to oc-githooks. Format loosely follows Keep a Changelog; versions are the tags repos pin to via `remotes`.
 
+## [v2.3.0] — 2026-08-11
+
+### Added
+- **`.github/workflows/mirror.yml`** — the central **reusable** CI mirror. Lives once
+  here; a project opts in with a tiny caller (`uses: …/mirror.yml@v2`, `with: {stack}`,
+  `secrets: inherit`). Authenticates to the private repo, sets up the stack toolchain
+  (flutter/web/node/reactnative/python), fetches hooks via lefthook, runs them. Costs no
+  minutes until a project calls it; you then control CI centrally via `@v2`.
+  Token passed via `env:` (not inline `${{ }}`). **Not yet run in Actions** — validate on
+  a throwaway repo first. `docs/CI.md` updated with the org-secret + caller setup.
+
 ## [v2.2.0] — 2026-08-11
 
 ### Changed
