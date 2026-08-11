@@ -2,6 +2,18 @@
 
 All notable changes to oc-githooks. Format loosely follows Keep a Changelog; versions are the tags repos pin to via `remotes`.
 
+## [v2.2.0] — 2026-08-11
+
+### Changed
+- **No Actions CI mirror by default.** `install-into-repo.sh` no longer copies
+  `ci/hooks.yml` into repos — it costs GitHub Actions minutes (limited on the free
+  plan) and needs per-stack toolchain + private-repo auth. The server-side gate is now
+  the **free** GitHub **branch-protection rulesets + secret scanning / push protection**.
+- **`docs/CI.md`** — documents the free-server-side-gate approach and the opt-in
+  reusable-workflow path for adding an Actions mirror later (with the caveat that CI
+  can't be distributed via lefthook `remotes` — each repo needs a small caller file).
+- `ci/hooks.yml` is retained as a **template** for that later opt-in, not auto-installed.
+
 ## [v2.1.2] — 2026-08-11
 
 ### Fixed

@@ -41,13 +41,15 @@ This copies:
 | `stacks/<stack>.yml` | `.githooks/stacks/<stack>.yml` |
 | `.gitleaks.toml` | `.gitleaks.toml` |
 | `examples/lefthook.<stack>.yml` | `lefthook.yml` |
-| `ci/hooks.yml` | `.github/workflows/hooks.yml` |
+
+(The Actions CI mirror is **not** installed by default — see [`CI.md`](CI.md). Use the
+free GitHub branch-protection rulesets + secret scanning as the server-side gate.)
 
 Then, in your repo:
 
 ```bash
 lefthook install                 # writes the git hooks for this clone
-git add .githooks lefthook.yml .gitleaks.toml .github/workflows/hooks.yml
+git add .githooks lefthook.yml .gitleaks.toml
 git commit -m "chore: adopt oc-githooks (TASK-ID)"
 ```
 
@@ -179,7 +181,12 @@ lefthook run pre-push   --all-files
 
 ## Bypassing (rare, and still caught by CI)
 
-`git commit --no-verify` / `git push --no-verify` skip local hooks — but the CI mirror (`.github/workflows/hooks.yml`) re-runs them, and GitHub branch-protection blocks protected-branch pushes regardless. Use `--no-verify` only in a genuine emergency, not as a habit; for a Gitleaks false positive, add an allowlist entry to `.gitleaks.toml` instead.
+`git commit --no-verify` / `git push --no-verify` skip local hooks — but the free
+server-side gates still catch the important cases: **secret scanning + push protection**
+block a leaked secret regardless, and **branch-protection rulesets** block direct pushes
+to protected branches (see [`CI.md`](CI.md)). Use `--no-verify` only in a genuine
+emergency, not as a habit; for a Gitleaks false positive, add an allowlist entry to
+`.gitleaks.toml` instead.
 
 ---
 

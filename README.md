@@ -8,7 +8,7 @@ Outcode's shared **git hooks** standard — one baseline every repository inheri
 
 ## What it does
 
-**Fast local feedback on every commit and push, backed by an un-bypassable CI mirror** (defense-in-depth — local hooks can be skipped with `--no-verify`, so GitHub branch-protection + CI remain the real gate).
+**Fast local feedback on every commit and push, backed by free un-bypassable server-side gates** (defense-in-depth — local hooks can be skipped with `--no-verify`, so GitHub **branch-protection rulesets + secret scanning** are the real gate; they cost no Actions minutes). An Actions lint/test mirror is opt-in later — see [`docs/CI.md`](docs/CI.md).
 
 On **commit** (`pre-commit` + `commit-msg`):
 
@@ -45,7 +45,7 @@ Then, in your repo:
 ```bash
 brew install lefthook gitleaks     # macOS  (or: npm install -g lefthook)
 lefthook install                   # activate the hooks in this clone
-git add .githooks lefthook.yml .gitleaks.toml .github/workflows/hooks.yml
+git add .githooks lefthook.yml .gitleaks.toml
 ```
 
 That's it — the next commit runs the hooks. Prefer to do it by hand, or want the auto-updating `remotes` setup instead of copied files? See [`docs/INSTALL.md`](docs/INSTALL.md).
@@ -75,12 +75,13 @@ oc-githooks/
 │   └── actions.yml           # GitHub Actions + YAML (cross-cutting)
 ├── examples/                 # per-repo lefthook.yml to copy (uses `extends`)
 ├── configs/                  # starter tool configs (.swiftlint.yml, .sqlfluff, …)
-├── ci/hooks.yml              # CI mirror — copy to .github/workflows/
+├── ci/hooks.yml              # CI mirror TEMPLATE (opt-in later; see docs/CI.md)
 ├── scripts/install-into-repo.sh   # copy method
 ├── scripts/adopt-remotes.sh       # one-command `remotes` (auto-update) setup
 ├── .gitleaks.toml            # secret-scan allowlist template
 └── docs/
     ├── INSTALL.md            # detailed install, `remotes` path, per-stack prerequisites
+    ├── CI.md                 # server-side gate: free GitHub protections now, Actions later
     ├── VERSIONING.md         # tag scheme + how updates reach repos
     ├── COMMIT_CONVENTION.md  # the commit-message rules, with examples
     ├── HOOKS_CATALOG.md      # every hook we run + the full menu of options
