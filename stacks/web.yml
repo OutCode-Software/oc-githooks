@@ -27,5 +27,6 @@ pre-push:
     web-typecheck:
       run: npx --no-install tsc --noEmit
     web-test:
-      # Full run with coverage so the 25% gate is meaningful (bar rises over time).
-      run: npx --no-install vitest run --coverage --coverage.thresholds.lines=25
+      # Coverage floor defaults to 25% (set centrally by oc-hooks); override per-repo
+      # with OC_MIN_COVERAGE (see docs/INSTALL.md). Full run so the gate is meaningful.
+      run: npx --no-install vitest run --coverage --coverage.thresholds.lines=${OC_MIN_COVERAGE:-25}

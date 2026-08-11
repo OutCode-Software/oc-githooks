@@ -24,5 +24,6 @@ pre-push:
     py-test:
       # `--cov=.` measures ALL source (incl. untested files); bare `--cov` only
       # measures imported modules, so untested files would be invisible to the gate.
-      # Fails if line coverage < 25% (bar rises over time).
-      run: pytest -x -q --cov=. --cov-fail-under=25
+      # Coverage floor defaults to 25% (set centrally by oc-hooks); a repo can raise
+      # its own bar by setting OC_MIN_COVERAGE (see docs/INSTALL.md).
+      run: pytest -x -q --cov=. --cov-fail-under=${OC_MIN_COVERAGE:-25}

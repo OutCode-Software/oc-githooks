@@ -161,6 +161,35 @@ in this repo.
 | shell | shfmt, shellcheck | — |
 | actions | actionlint, yamllint | uses `yamllint -d relaxed`; add a `.yamllint` to customise |
 
+## Coverage threshold (central default + per-repo override)
+
+The pre-push coverage gate defaults to **25%**, set centrally by oc-hooks (so a release
+can move the org default). A repo can raise its **own** bar without forking the stack —
+add an `env:` block overriding `OC_MIN_COVERAGE` on its coverage command in the repo's
+committed `lefthook.yml` (this merges over the config pulled from `remotes`):
+
+```yaml
+remotes:
+  - git_url: https://github.com/OutCode-Software/oc-githooks
+    ref: v2
+    configs: [base.yml, stacks/flutter.yml]
+
+# raise THIS repo's coverage floor above the org default (25):
+pre-push:
+  commands:
+    flutter-test:              # the coverage command for your stack (table below)
+      env:
+        OC_MIN_COVERAGE: "40"
+```
+
+Coverage command name per stack: `python`→`py-test`, `web`→`web-test`, `node`→`node-test`,
+`reactnative`→`rn-test`, `flutter`→`flutter-test`, `swift`→`swift-test`, `kotlin`→`kotlin-test`,
+`php`→`php-test`, `laravel`→`laravel-test`, `ruby`→`ruby-test`.
+
+> Raising a repo's own floor is safe (only stricter). Raising the **org-wide** default in
+> oc-hooks is a **breaking** change (it can fail pushes that used to pass) → ships as a new
+> major tag, per [`VERSIONING.md`](VERSIONING.md).
+
 ## Verifying it works
 
 ```bash

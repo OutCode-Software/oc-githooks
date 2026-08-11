@@ -24,10 +24,11 @@ pre-push:
       run: |
         rm -f coverage/lcov.info
         flutter test --coverage || exit 1
+        MIN="${OC_MIN_COVERAGE:-25}"
         pct=$(awk -F: '/^LF:/{f+=$2} /^LH:/{h+=$2} END{if(f==0)print 0; else printf "%d",(h*100)/f}' coverage/lcov.info)
-        if [ "${pct:-0}" -lt 25 ]; then
-          echo "✗ Line coverage ${pct}% is below the 25% minimum."
+        if [ "${pct:-0}" -lt "$MIN" ]; then
+          echo "✗ Line coverage ${pct}% is below the ${MIN}% minimum."
           echo "  Add tests. Inspect: genhtml coverage/lcov.info -o coverage/html && open coverage/html/index.html"
           exit 1
         fi
-        echo "✓ Coverage ${pct}% (>=25%)"
+        echo "✓ Coverage ${pct}% (>=${MIN}%)"

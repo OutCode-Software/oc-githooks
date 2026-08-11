@@ -24,8 +24,8 @@ pre-push:
         bundle exec rspec || exit 1
         if [ -f coverage/.last_run.json ]; then
           pct=$(ruby -rjson -e 'r=JSON.parse(File.read("coverage/.last_run.json"))["result"]; puts (r["line"]||r["covered_percent"]||0).to_i')
-          if [ "${pct:-0}" -lt 25 ]; then echo "✗ Line coverage ${pct}% is below the 25% minimum. Add tests."; exit 1; fi
-          echo "✓ Coverage ${pct}% (>=25%)"
+          if [ "${pct:-0}" -lt "${OC_MIN_COVERAGE:-25}" ]; then echo "✗ Line coverage ${pct}% is below the ${OC_MIN_COVERAGE:-25}% minimum. Add tests."; exit 1; fi
+          echo "✓ Coverage ${pct}% (>=${OC_MIN_COVERAGE:-25}%)"
         else
           echo "⚠ No SimpleCov report found — add SimpleCov to enforce coverage."
         fi

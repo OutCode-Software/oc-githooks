@@ -2,6 +2,15 @@
 
 All notable changes to oc-githooks. Format loosely follows Keep a Changelog; versions are the tags repos pin to via `remotes`.
 
+## [v2.4.0] — 2026-08-11
+
+### Added
+- **Configurable coverage threshold.** Every stack's pre-push coverage gate now reads
+  `${OC_MIN_COVERAGE:-25}` — the 25% default stays central (in oc-hooks), but a repo can
+  raise its own bar via an `env:` block on its coverage command in the committed
+  `lefthook.yml` (merges over the `remotes` config). Verified end-to-end with pytest
+  (default 25 → PASS at 85.7%; override 90 → BLOCK). Docs in INSTALL.md.
+
 ## [v2.3.0] — 2026-08-11
 
 ### Added
