@@ -186,6 +186,19 @@ Coverage command name per stack: `python`→`py-test`, `web`→`web-test`, `node
 `reactnative`→`rn-test`, `flutter`→`flutter-test`, `swift`→`swift-test`, `kotlin`→`kotlin-test`,
 `php`→`php-test`, `laravel`→`laravel-test`, `ruby`→`ruby-test`.
 
+**Python coverage scope:** the `python` stack measures `--cov=.` by default. A Django /
+`apps/`-layout repo should set `OC_COV_SOURCE=apps` (alongside `OC_MIN_COVERAGE`) so the
+gate measures the app packages, not `migrations/`/`settings`:
+
+```yaml
+pre-push:
+  commands:
+    py-test:
+      env:
+        OC_COV_SOURCE: apps
+        OC_MIN_COVERAGE: "75"
+```
+
 > Raising a repo's own floor is safe (only stricter). Raising the **org-wide** default in
 > oc-hooks is a **breaking** change (it can fail pushes that used to pass) → ships as a new
 > major tag, per [`VERSIONING.md`](VERSIONING.md).

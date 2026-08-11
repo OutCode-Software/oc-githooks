@@ -2,6 +2,15 @@
 
 All notable changes to oc-githooks. Format loosely follows Keep a Changelog; versions are the tags repos pin to via `remotes`.
 
+## [v2.5.0] — 2026-08-11
+
+### Added
+- **Configurable python coverage source.** The `python` stack now runs
+  `pytest --cov=${OC_COV_SOURCE:-.} --cov-fail-under=${OC_MIN_COVERAGE:-25}` — default
+  `.` (flat services), but Django / `apps/`-layout repos set `OC_COV_SOURCE=apps` so the
+  gate measures app packages, not migrations/settings. Lets those repos use the standard
+  py-test command (instead of skipping it) while keeping a correct scope + their own bar.
+
 ## [v2.4.0] — 2026-08-11
 
 ### Added

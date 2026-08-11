@@ -24,6 +24,7 @@ pre-push:
     py-test:
       # `--cov=.` measures ALL source (incl. untested files); bare `--cov` only
       # measures imported modules, so untested files would be invisible to the gate.
-      # Coverage floor defaults to 25% (set centrally by oc-hooks); a repo can raise
-      # its own bar by setting OC_MIN_COVERAGE (see docs/INSTALL.md).
-      run: pytest -x -q --cov=. --cov-fail-under=${OC_MIN_COVERAGE:-25}
+      # Coverage source defaults to `.` (flat services); Django / apps-layout repos set
+      # OC_COV_SOURCE=apps. Floor defaults to 25%; raise per-repo with OC_MIN_COVERAGE.
+      # Both are set centrally by oc-hooks and overridable per-repo (see docs/INSTALL.md).
+      run: pytest -x -q --cov=${OC_COV_SOURCE:-.} --cov-fail-under=${OC_MIN_COVERAGE:-25}
