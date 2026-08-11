@@ -29,8 +29,16 @@ esac
 
 # 1) lefthook.yml (remotes) — never clobber an existing one
 if [ -e "$TARGET/lefthook.yml" ]; then
-  echo "• lefthook.yml already exists — left untouched."
-  echo "  Add manually if needed: remotes -> $GIT_URL @ $REF : base.yml, stacks/$STACK.yml"
+  if grep -q 'remotes:' "$TARGET/lefthook.yml" && grep -q 'oc-githooks' "$TARGET/lefthook.yml"; then
+    echo "• lefthook.yml already has an oc-githooks remotes block — left untouched."
+  else
+    echo "⚠ lefthook.yml already exists and is NOT an oc-githooks remotes config."
+    echo "  (Looks like the copy method — an 'extends:' block — or a custom setup.)"
+    echo "  This script won't overwrite it. To switch to auto-updating remotes, remove the"
+    echo "  copy-method files first, then re-run:"
+    echo "     rm -rf \"$TARGET/lefthook.yml\" \"$TARGET/.githooks\""
+    exit 1
+  fi
 else
   cat > "$TARGET/lefthook.yml" <<YAML
 remotes:

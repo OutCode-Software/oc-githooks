@@ -2,6 +2,16 @@
 
 All notable changes to oc-githooks. Format loosely follows Keep a Changelog; versions are the tags repos pin to via `remotes`.
 
+## [v2.1.2] — 2026-08-11
+
+### Fixed
+- **`adopt-remotes.sh` false alarm** — when a repo already had a *non-remotes*
+  `lefthook.yml` (e.g. the copy method's `extends:` block), the script skipped
+  writing but then ran its remote-fetch check and wrongly reported
+  `✗ REMOTE FETCH FAILED — hooks are EMPTY` even though the copy-method hooks were
+  active. It now detects a non-remotes config and exits with clear guidance to remove
+  the copy-method files (`lefthook.yml`, `.githooks/`) before switching to remotes.
+
 ## [v2.1.1] — 2026-08-11
 
 ### Changed
