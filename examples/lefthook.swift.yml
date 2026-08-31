@@ -2,8 +2,9 @@
 # Then copy base.yml -> .githooks/base.yml and stacks/swift.yml -> .githooks/stacks/swift.yml
 # (or run scripts/install-into-repo.sh swift /path/to/your/repo)
 #
-# For the auto-updating setup, replace the 'extends' block below with the
-# 'remotes' block shown in docs/INSTALL.md to pull updates from oc-githooks.
+# NOTE: this copy/`extends` method is the FALLBACK (use only if 'remotes' is unreachable).
+# The recommended default is the 'remotes' block — auto-updates, no committed .githooks/.
+# See docs/INSTALL.md Option B, or run: scripts/adopt-remotes.sh <stack> /path/to/repo
 extends:
   - .githooks/base.yml
   - .githooks/stacks/swift.yml

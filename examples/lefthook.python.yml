@@ -2,8 +2,9 @@
 # Then copy base.yml -> .githooks/base.yml and stacks/python.yml -> .githooks/stacks/python.yml
 # (or run scripts/install-into-repo.sh python /path/to/your/repo)
 #
-# Once the central oc-githooks repo is published, replace the 'extends' block
-# below with the 'remotes' block shown in docs/INSTALL.md to auto-pull updates.
+# NOTE: this copy/`extends` method is the FALLBACK (use only if 'remotes' is unreachable).
+# The recommended default is the 'remotes' block — auto-updates, no committed .githooks/.
+# See docs/INSTALL.md Option B, or run: scripts/adopt-remotes.sh <stack> /path/to/repo
 extends:
   - .githooks/base.yml
   - .githooks/stacks/python.yml

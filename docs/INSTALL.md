@@ -1,6 +1,9 @@
 # INSTALL — adopting oc-githooks in a repository
 
-Two prerequisites, then pick **A** (copy — recommended for the pilot) or **B** (`remotes` — for after the repo is published).
+Two prerequisites, then pick a method:
+
+- **Option B — `remotes` (recommended default).** The repo holds only a `lefthook.yml` pointer; Lefthook pulls the hook configs from this central repo and auto-updates them. **No committed `.githooks/` folder**, no drift. Use this unless you have a specific reason not to.
+- **Option A — copy the files (fallback).** Copies `base.yml` + your stack into a committed `.githooks/` folder. Use **only** when a repo or its CI can't reach the private `oc-githooks` (air-gapped, no access); you then have to update the copied files by hand.
 
 ## Prerequisites (once per machine)
 
@@ -25,9 +28,13 @@ Verify: `lefthook version` and `gitleaks version`.
 
 ---
 
-## Option A — copy the files (recommended for the pilot)
+## Option A — copy the files (fallback)
 
-Fastest path, no external dependency. From the `oc-githooks` folder:
+> Use this only when `remotes` (Option B, below) isn't reachable — it creates a
+> committed `.githooks/` folder you must keep up to date by hand. Most repos should
+> use Option B.
+
+No external dependency at hook-run time (the configs are vendored in). From the `oc-githooks` folder:
 
 ```bash
 scripts/install-into-repo.sh <python|web|node|flutter|swift|kotlin|reactnative|php|laravel|ruby|infra|docker|shell|sql|actions> /path/to/your/repo
@@ -65,7 +72,7 @@ extends:
 
 ---
 
-## Option B — `remotes` (recommended standard, now published)
+## Option B — `remotes` (recommended default)
 
 No copied files: Lefthook pulls `base.yml` + your stack straight from the central
 `oc-githooks` repo and merges them locally. Your repo holds only this pointer.

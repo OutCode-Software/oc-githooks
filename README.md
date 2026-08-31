@@ -34,10 +34,10 @@ All 15 stacks were **validated end-to-end** — installed into throwaway repos a
 
 ## Quick start (adopt in one repo)
 
-From this folder, install into a target repo in one command:
+**Recommended method: `remotes`** — the repo holds only a small `lefthook.yml` pointer; Lefthook pulls `base.yml` + your stack from this central repo and auto-updates them. Nothing is copied in, so there is **no `.githooks/` folder** to maintain or let go stale. From a clone of this repo:
 
 ```bash
-scripts/install-into-repo.sh <python|web|node|flutter|swift|kotlin|reactnative|php|laravel|ruby|infra|docker|shell|sql|actions> /path/to/your/repo
+scripts/adopt-remotes.sh <python|web|node|flutter|swift|kotlin|reactnative|php|laravel|ruby|infra|docker|shell|sql|actions> /path/to/your/repo
 ```
 
 Then, in your repo:
@@ -45,10 +45,12 @@ Then, in your repo:
 ```bash
 brew install lefthook gitleaks     # macOS  (or: npm install -g lefthook)
 lefthook install                   # activate the hooks in this clone
-git add .githooks lefthook.yml .gitleaks.toml
+git add lefthook.yml .gitleaks.toml
 ```
 
-That's it — the next commit runs the hooks. Prefer to do it by hand, or want the auto-updating `remotes` setup instead of copied files? See [`docs/INSTALL.md`](docs/INSTALL.md).
+That's it — the next commit runs the hooks, and non-breaking updates arrive automatically. `adopt-remotes.sh` also **verifies the remote actually fetched** (a failed fetch fails silently — see [`docs/INSTALL.md`](docs/INSTALL.md)).
+
+> **Fallback: copy method.** Only if a repo/CI can't reach the private `oc-githooks` (air-gapped, no access), copy the files in instead — this creates a committed `.githooks/` folder that must be updated by hand. See [Option A in `docs/INSTALL.md`](docs/INSTALL.md#option-a--copy-the-files-fallback).
 
 ---
 
