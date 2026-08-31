@@ -20,11 +20,11 @@ pre-push:
     flutter-analyze:
       run: flutter analyze
     flutter-test:
-      # Unit tests must pass and cover >=50% of lines (bar rises over time).
+      # Unit tests must pass and cover >=80% of lines (bar rises over time).
       run: |
         rm -f coverage/lcov.info
         flutter test --coverage || exit 1
-        MIN="${OC_MIN_COVERAGE:-50}"
+        MIN="${OC_MIN_COVERAGE:-80}"
         pct=$(awk -F: '/^LF:/{f+=$2} /^LH:/{h+=$2} END{if(f==0)print 0; else printf "%d",(h*100)/f}' coverage/lcov.info)
         if [ "${pct:-0}" -lt "$MIN" ]; then
           echo "✗ Line coverage ${pct}% is below the ${MIN}% minimum."

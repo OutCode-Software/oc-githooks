@@ -170,7 +170,7 @@ in this repo.
 
 ## Coverage threshold (central default + per-repo override)
 
-The pre-push coverage gate defaults to **50%**, set centrally by oc-hooks (so a release
+The pre-push coverage gate defaults to **80%**, set centrally by oc-hooks (so a release
 can move the org default). A repo can raise its **own** bar without forking the stack —
 add an `env:` block overriding `OC_MIN_COVERAGE` on its coverage command in the repo's
 committed `lefthook.yml` (this merges over the config pulled from `remotes`):
@@ -181,12 +181,12 @@ remotes:
     ref: v2
     configs: [base.yml, stacks/flutter.yml]
 
-# raise THIS repo's coverage floor above the org default (50):
+# raise THIS repo's coverage floor above the org default (80):
 pre-push:
   commands:
     flutter-test:              # the coverage command for your stack (table below)
       env:
-        OC_MIN_COVERAGE: "70"
+        OC_MIN_COVERAGE: "90"
 ```
 
 Coverage command name per stack: `python`→`py-test`, `web`→`web-test`, `node`→`node-test`,

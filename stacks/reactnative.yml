@@ -34,7 +34,7 @@ pre-push:
     rn-typecheck:
       run: npx --no-install tsc --noEmit
     rn-test:
-      # Jest with coverage; fails if line coverage < 50% (bar rises over time).
+      # Jest with coverage; fails if line coverage < 80% (bar rises over time).
       run: |
         npx --no-install jest --coverage --coverageReporters=json-summary --passWithNoTests || exit 1
-        node -e 'const min=+(process.env.OC_MIN_COVERAGE||50); const p=require("./coverage/coverage-summary.json").total.lines.pct; if(p<min){console.error("✗ Line coverage "+p+"% is below the "+min+"% minimum. Add tests.");process.exit(1)} console.log("✓ Coverage "+p+"% (>="+min+"%)")'
+        node -e 'const min=+(process.env.OC_MIN_COVERAGE||80); const p=require("./coverage/coverage-summary.json").total.lines.pct; if(p<min){console.error("✗ Line coverage "+p+"% is below the "+min+"% minimum. Add tests.");process.exit(1)} console.log("✓ Coverage "+p+"% (>="+min+"%)")'

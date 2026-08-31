@@ -17,7 +17,7 @@ scheme that makes `remotes` updates predictable.
 - **Breaking** (a new *blocking* check, a renamed stack/config path, a raised
   coverage gate): cut `v2.0.0`. **Do not** move `v1`. Announce a migration note.
 
-> Raising the coverage gate (e.g. the 25% → 50% default bump) is **breaking** — it can
+> Raising the coverage gate (e.g. the 50% → 80% default bump) is **breaking** — it can
 > fail a push that used to pass. It ships in a new major tag, never as a same-major
 > fast-forward.
 

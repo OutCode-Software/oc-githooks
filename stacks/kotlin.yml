@@ -31,10 +31,10 @@ pre-push:
           total=$((missed + covered))
           if [ "$total" -gt 0 ]; then
             pct=$((covered * 100 / total))
-            if [ "$pct" -lt "${OC_MIN_COVERAGE:-50}" ]; then
-              echo "✗ Line coverage ${pct}% is below the ${OC_MIN_COVERAGE:-50}% minimum. Add tests."; exit 1
+            if [ "$pct" -lt "${OC_MIN_COVERAGE:-80}" ]; then
+              echo "✗ Line coverage ${pct}% is below the ${OC_MIN_COVERAGE:-80}% minimum. Add tests."; exit 1
             fi
-            echo "✓ Coverage ${pct}% (>=${OC_MIN_COVERAGE:-50}%)"
+            echo "✓ Coverage ${pct}% (>=${OC_MIN_COVERAGE:-80}%)"
           fi
         else
           echo "⚠ No JaCoCo XML report found — add the jacoco plugin to enforce coverage."

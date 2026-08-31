@@ -34,18 +34,18 @@ Every hook we run today, plus the full menu of what git hooks *can* do and what 
 
 ### Per-stack layers
 
-All test-running stacks enforce a **≥50% line-coverage gate** on pre-push (a moderate baseline that rises over time).
+All test-running stacks enforce a **≥80% line-coverage gate** on pre-push (a solid baseline that rises over time).
 
 - **Python** (`stacks/python.yml`): `ruff format` + `ruff check --fix` (pre-commit), no `pdb`/`breakpoint()`/`ipdb`; `mypy` + `pytest -x -q --cov --cov-fail-under=25` (pre-push).
-- **Web** (`stacks/web.yml`): `prettier --write` + `eslint --fix` (pre-commit), no `debugger`, no `.only` focused tests; `tsc --noEmit` + `vitest run --coverage` (50% gate) (pre-push).
-- **Node/NestJS** (`stacks/node.yml`): `prettier --write` + `eslint --fix` (pre-commit), no `debugger`, no `.only` tests; `tsc --noEmit` + `jest --coverage` (50% gate) (pre-push).
-- **Flutter** (`stacks/flutter.yml`): `dart format` + `dart analyze` (pre-commit), warn on `print()`; `flutter analyze` + `flutter test --coverage` (50% gate) (pre-push).
-- **Swift** (`stacks/swift.yml`): `swiftformat` (pre-commit), warn on stray `print(`; `swiftlint --strict` + `swift test` (50% gate) (pre-push). Obj-C files get base-only coverage. Xcode-app repos swap `swift test` for `xcodebuild test` (see file comment).
-- **Kotlin** (`stacks/kotlin.yml`): `ktlint -F` + `ktlint` (pre-commit), warn on `println(`; `./gradlew test` + JaCoCo (50% gate) (pre-push). Java files get base-only coverage.
-- **React Native** (`stacks/reactnative.yml`): `prettier --write` + `eslint --fix` (pre-commit), no `debugger`, no `.only` tests, warn on `console.log`; `tsc --noEmit` + `jest --coverage` (50% gate) (pre-push). Native shells: add `swift`/`kotlin` alongside.
-- **PHP** (`stacks/php.yml`): `php-cs-fixer fix` + `php -l` syntax + warn on `var_dump`/`dd`/`print_r` (pre-commit); `phpstan analyse` + `phpunit` with Clover (50% gate) (pre-push).
+- **Web** (`stacks/web.yml`): `prettier --write` + `eslint --fix` (pre-commit), no `debugger`, no `.only` focused tests; `tsc --noEmit` + `vitest run --coverage` (80% gate) (pre-push).
+- **Node/NestJS** (`stacks/node.yml`): `prettier --write` + `eslint --fix` (pre-commit), no `debugger`, no `.only` tests; `tsc --noEmit` + `jest --coverage` (80% gate) (pre-push).
+- **Flutter** (`stacks/flutter.yml`): `dart format` + `dart analyze` (pre-commit), warn on `print()`; `flutter analyze` + `flutter test --coverage` (80% gate) (pre-push).
+- **Swift** (`stacks/swift.yml`): `swiftformat` (pre-commit), warn on stray `print(`; `swiftlint --strict` + `swift test` (80% gate) (pre-push). Obj-C files get base-only coverage. Xcode-app repos swap `swift test` for `xcodebuild test` (see file comment).
+- **Kotlin** (`stacks/kotlin.yml`): `ktlint -F` + `ktlint` (pre-commit), warn on `println(`; `./gradlew test` + JaCoCo (80% gate) (pre-push). Java files get base-only coverage.
+- **React Native** (`stacks/reactnative.yml`): `prettier --write` + `eslint --fix` (pre-commit), no `debugger`, no `.only` tests, warn on `console.log`; `tsc --noEmit` + `jest --coverage` (80% gate) (pre-push). Native shells: add `swift`/`kotlin` alongside.
+- **PHP** (`stacks/php.yml`): `php-cs-fixer fix` + `php -l` syntax + warn on `var_dump`/`dd`/`print_r` (pre-commit); `phpstan analyse` + `phpunit` with Clover (80% gate) (pre-push).
 - **Laravel** (`stacks/laravel.yml`): `pint` (pre-commit) + **block** `dd`/`dump`/`ray`; `phpstan/larastan` + `php artisan test --coverage --min=25` (pre-push).
-- **Ruby/Rails** (`stacks/ruby.yml`): `rubocop -A` + `rubocop` + block `binding.pry`/`byebug`/`debugger` (pre-commit); `rspec` + SimpleCov (50% gate) (pre-push).
+- **Ruby/Rails** (`stacks/ruby.yml`): `rubocop -A` + `rubocop` + block `binding.pry`/`byebug`/`debugger` (pre-commit); `rspec` + SimpleCov (80% gate) (pre-push).
 - **Infra** (`stacks/infra.yml`): `terraform fmt` + block `.tfstate`/`.terraform/` + `trivy config` (pre-commit); `terraform validate` + `tflint` (pre-push).
 
 ### Cross-cutting overlays (add alongside a language stack)

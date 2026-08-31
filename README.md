@@ -24,7 +24,7 @@ On **push** (`pre-push`):
 - 🧹 Blocks pushing **WIP / fixup! / squash!** commits; warns on non-standard branch names.
 - Runs the stack's **type-check + tests** (see each stack layer).
 
-**Language stacks:** **Python** (ruff, mypy, pytest), **Web** (prettier, eslint, tsc, vitest, no `debugger`/`.only`), **Node/NestJS** (prettier, eslint, tsc, jest), **Flutter** (dart format/analyze, flutter test), **Swift** (swiftformat, swiftlint, swift test), **Kotlin** (ktlint, gradle test), **React Native** (prettier, eslint, tsc, jest, no `debugger`/`console.log`), **PHP** (php-cs-fixer, phpstan, phpunit), **Laravel** (pint, larastan, `artisan test`), **Ruby/Rails** (rubocop, rspec), **Infra** (terraform fmt/validate, tflint, trivy). Test stacks enforce a **≥50% coverage gate** on pre-push.
+**Language stacks:** **Python** (ruff, mypy, pytest), **Web** (prettier, eslint, tsc, vitest, no `debugger`/`.only`), **Node/NestJS** (prettier, eslint, tsc, jest), **Flutter** (dart format/analyze, flutter test), **Swift** (swiftformat, swiftlint, swift test), **Kotlin** (ktlint, gradle test), **React Native** (prettier, eslint, tsc, jest, no `debugger`/`console.log`), **PHP** (php-cs-fixer, phpstan, phpunit), **Laravel** (pint, larastan, `artisan test`), **Ruby/Rails** (rubocop, rspec), **Infra** (terraform fmt/validate, tflint, trivy). Test stacks enforce a **≥80% coverage gate** on pre-push.
 
 **Cross-cutting overlays** (add alongside a language stack): **docker** (hadolint), **shell** (shfmt, shellcheck), **sql** (sqlfluff), **actions** (actionlint, yamllint). Full list in [`docs/HOOKS_CATALOG.md`](docs/HOOKS_CATALOG.md).
 
