@@ -2,6 +2,16 @@
 
 All notable changes to oc-githooks. Format loosely follows Keep a Changelog; versions are the tags repos pin to via `remotes`.
 
+## [v3.0.0] — 2026-08-31
+
+### Changed (BREAKING)
+- **Org-wide coverage default raised 25% → 50%.** Every test-running stack now falls back
+  to `${OC_MIN_COVERAGE:-50}` (JS stacks: `OC_MIN_COVERAGE||50`) when a repo doesn't set its
+  own floor. This can fail pushes that previously passed at 25–49% line coverage, so per
+  `docs/VERSIONING.md` it ships as a new **major** tag: repos pinned to `ref: v2` keep the
+  25% default until they move to `ref: v3`. Repos that already set their own `OC_MIN_COVERAGE`
+  (e.g. backend 75, gifthound 90) are unaffected. Docs updated: README, HOOKS_CATALOG, INSTALL.
+
 ## [v2.5.0] — 2026-08-11
 
 ### Added

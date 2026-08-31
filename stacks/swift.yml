@@ -28,10 +28,10 @@ pre-push:
         if [ -n "$prof" ] && [ -n "$bin" ]; then
           pct=$(xcrun llvm-cov report "$bin"/Contents/MacOS/* -instr-profile "$prof" 2>/dev/null \
             | awk '/^TOTAL/{for(i=NF;i>=1;i--) if($i ~ /%$/){gsub("%","",$i); print int($i); break}}')
-          if [ "${pct:-0}" -lt "${OC_MIN_COVERAGE:-25}" ]; then
-            echo "✗ Line coverage ${pct}% is below the ${OC_MIN_COVERAGE:-25}% minimum. Add tests."; exit 1
+          if [ "${pct:-0}" -lt "${OC_MIN_COVERAGE:-50}" ]; then
+            echo "✗ Line coverage ${pct}% is below the ${OC_MIN_COVERAGE:-50}% minimum. Add tests."; exit 1
           fi
-          echo "✓ Coverage ${pct}% (>=${OC_MIN_COVERAGE:-25}%)"
+          echo "✓ Coverage ${pct}% (>=${OC_MIN_COVERAGE:-50}%)"
         else
           echo "⚠ Coverage data not found — adjust swift-test for your project (see comment above)."
         fi

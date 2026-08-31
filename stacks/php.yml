@@ -26,7 +26,7 @@ pre-push:
     php-analyse:
       run: phpstan analyse --no-progress
     php-test:
-      # phpunit with Clover coverage; fails if line coverage < 25%.
+      # phpunit with Clover coverage; fails if line coverage < 50%.
       run: |
         phpunit --coverage-clover=coverage/clover.xml || exit 1
         line=$(grep -o '<metrics [^>]*>' coverage/clover.xml | tail -1)
@@ -34,8 +34,8 @@ pre-push:
         total=$(printf '%s' "$line" | sed -E 's/.* statements="([0-9]+)".*/\1/')
         if [ -n "$total" ] && [ "$total" -gt 0 ]; then
           pct=$((covered * 100 / total))
-          if [ "$pct" -lt "${OC_MIN_COVERAGE:-25}" ]; then echo "✗ Line coverage ${pct}% is below the ${OC_MIN_COVERAGE:-25}% minimum. Add tests."; exit 1; fi
-          echo "✓ Coverage ${pct}% (>=${OC_MIN_COVERAGE:-25}%)"
+          if [ "$pct" -lt "${OC_MIN_COVERAGE:-50}" ]; then echo "✗ Line coverage ${pct}% is below the ${OC_MIN_COVERAGE:-50}% minimum. Add tests."; exit 1; fi
+          echo "✓ Coverage ${pct}% (>=${OC_MIN_COVERAGE:-50}%)"
         else
           echo "⚠ Could not read Clover coverage — ensure pcov/xdebug is enabled."
         fi

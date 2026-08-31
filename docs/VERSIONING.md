@@ -17,8 +17,9 @@ scheme that makes `remotes` updates predictable.
 - **Breaking** (a new *blocking* check, a renamed stack/config path, a raised
   coverage gate): cut `v2.0.0`. **Do not** move `v1`. Announce a migration note.
 
-> Raising the coverage gate (e.g. 25% → 40%) is **breaking** — it can fail a push
-> that used to pass. It ships in a new major tag, never as a `v1` fast-forward.
+> Raising the coverage gate (e.g. the 25% → 50% default bump) is **breaking** — it can
+> fail a push that used to pass. It ships in a new major tag, never as a same-major
+> fast-forward.
 
 ## How a repo receives updates
 
