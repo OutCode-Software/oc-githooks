@@ -170,7 +170,7 @@ in this repo.
 
 ## Coverage threshold (central default + per-repo override)
 
-The pre-push coverage gate defaults to **80%**, set centrally by oc-hooks (so a release
+The pre-push coverage gate defaults to **90%**, set centrally by oc-hooks (so a release
 can move the org default). A repo can raise its **own** bar without forking the stack —
 add an `env:` block overriding `OC_MIN_COVERAGE` on its coverage command in the repo's
 committed `lefthook.yml` (this merges over the config pulled from `remotes`):
