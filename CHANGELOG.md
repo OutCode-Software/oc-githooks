@@ -2,6 +2,21 @@
 
 All notable changes to oc-githooks. Format loosely follows Keep a Changelog; versions are the tags repos pin to via `remotes`.
 
+## [v5.0.0] — 2026-09-06
+
+### Changed (BREAKING)
+- **Org-wide coverage default raised 80% → 90%.** Every test-running stack now falls back
+  to `${OC_MIN_COVERAGE:-90}` (JS stacks: `OC_MIN_COVERAGE||90`). This fails pushes that
+  previously passed at 80–89% line coverage, so per `docs/VERSIONING.md` it ships as a new
+  **major** tag: repos pinned to `ref: v4` keep the 80% default until they move to `ref: v5`.
+  Repos that set their own `OC_MIN_COVERAGE` are unaffected.
+
+  **Migrating.** Do not move to `v5` until the repo actually reaches 90%, or set an explicit
+  `OC_MIN_COVERAGE` for it and raise that as a ratchet. A floor a repo cannot meet is worse
+  than no floor: `--no-verify` is all-or-nothing, so a developer bypassing the coverage gate
+  also bypasses the secret scan, the debugger-statement check and the protected-branch guard
+  in the same keystroke.
+
 ## [v4.0.0] — 2026-08-31
 
 ### Changed (BREAKING)
