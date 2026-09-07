@@ -8,16 +8,16 @@ scheme that makes `remotes` updates predictable.
 
 | Tag | Mutable? | Points at | Who pins it |
 |---|---|---|---|
-| `v1.2.3` | **No** — never moves | one exact release | repos wanting fully reproducible hooks |
-| `v1` | **Yes** — fast-forwarded | the latest `v1.x.y` | most repos (auto-receive non-breaking updates) |
-| `v2` | Yes | the latest `v2.x.y` | repos that have migrated past a breaking change |
+| `v5.0.0` | **No** — never moves | one exact release | repos wanting fully reproducible hooks |
+| `v5` | **Yes** — fast-forwarded | the latest `v5.x.y` | **current line** — most repos (auto-receive non-breaking updates) |
+| `v4` | Yes | the latest `v4.x.y` | repos not yet migrated past the last breaking change |
 
-- **Patch/minor** (new stack, new non-blocking check, fix): cut `v1.(x+1).0` or
-  `v1.x.(y+1)`, then **fast-forward `v1`** to it.
+- **Patch/minor** (new stack, new non-blocking check, fix): cut `vN.(x+1).0` or
+  `vN.x.(y+1)`, then **fast-forward `vN`** to it.
 - **Breaking** (a new *blocking* check, a renamed stack/config path, a raised
-  coverage gate): cut `v2.0.0`. **Do not** move `v1`. Announce a migration note.
+  coverage gate): cut `v(N+1).0.0`. **Do not** move `vN`. Announce a migration note.
 
-> Raising the coverage gate (e.g. the 50% → 90% default bump) is **breaking** — it can
+> Raising the coverage gate (e.g. the 80% → 90% default bump in v5.0.0) is **breaking** — it can
 > fail a push that used to pass. It ships in a new major tag, never as a same-major
 > fast-forward.
 
@@ -26,7 +26,7 @@ scheme that makes `remotes` updates predictable.
 ```yaml
 remotes:
   - git_url: git@github.com:OutCode-Software/oc-githooks
-    ref: v2
+    ref: v5
     refetch_frequency: 24h      # always | never | <duration e.g. 24h/30m>
     configs: [base.yml, stacks/<stack>.yml]
 ```
@@ -36,14 +36,15 @@ remotes:
 - To force an update now: re-run `lefthook install`, or clear the cache at
   `.git/info/lefthook-remotes/` and re-run it.
 
-**Recommended Outcode default:** `ref: v2` (current line) + `refetch_frequency: 24h`.
+**Recommended Outcode default:** `ref: v5` (current line) + `refetch_frequency: 24h`.
 
 ## Release checklist (maintainers)
 
 1. Merge changes to `main`; update `CHANGELOG.md` with the new version + date.
-2. Tag the immutable release: `git tag -a v1.x.y -m "…" && git push origin v1.x.y`.
+2. Tag the immutable release: `git tag -a vN.x.y -m "…" && git push origin vN.x.y`.
 3. Fast-forward the rolling major (non-breaking only):
-   `git tag -f -a v1 -m "…" && git push -f origin v1`.
+   `git tag -f -a vN -m "…" && git push -f origin vN`.
 4. Announce in the team channel; link the CHANGELOG entry.
-5. Breaking change instead? Tag `v2.0.0`, leave `v1` where it is, publish a
-   migration note.
+5. Breaking change instead? Tag `v(N+1).0.0`, leave `vN` where it is, publish a
+   migration note — and bump the `OC_REF` default in `scripts/adopt-remotes.sh`
+   plus the `ref:` pins in README/INSTALL/VERSIONING once repos should adopt it.
