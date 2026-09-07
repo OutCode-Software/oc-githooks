@@ -5,6 +5,16 @@ All notable changes to oc-githooks. Format loosely follows Keep a Changelog; ver
 ## [Unreleased]
 
 ### Fixed
+- **Adoption pin was three majors stale.** `scripts/adopt-remotes.sh` still defaulted
+  `OC_REF` to `v2`, and README/INSTALL/VERSIONING still called `v2` the current line, so
+  every newly-onboarded repo pinned to the frozen `v2` line (25% coverage default) and —
+  because a rolling major is deliberately never fast-forwarded across a breaking change —
+  would never receive v3/v4/v5. Default and docs now say `v5`.
+- Made the tag-scheme table, the release checklist and the exact-tag example in
+  `docs/VERSIONING.md` / `docs/INSTALL.md` version-agnostic (`vN` / `v(N+1)`) so they
+  don't re-stale on the next major, and added a checklist step to bump the adopt default.
+- `docs/INSTALL.md` "raise your own bar" example still said the org default was 80 and
+  set `OC_MIN_COVERAGE: "90"` (no longer a raise); now 90 and `"95"`.
 - **`node` stack hardcoded Jest, so every Vitest backend failed pre-push.** `node-test` ran
   `npx --no-install jest`, which exits non-zero when Jest isn't installed — a Node/Express
   service on Vitest could not push at all, and the only workaround was adopting the

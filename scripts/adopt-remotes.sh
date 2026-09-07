@@ -8,10 +8,10 @@
 # copies the gitleaks allowlist (remotes can't fetch non-lefthook files), drops any
 # starter tool configs, gitignores generated dirs, then runs `lefthook install`.
 #
-# Env overrides:  OC_REF (default v2)   OC_GIT_URL (default the private SSH URL)
+# Env overrides:  OC_REF (default v5)   OC_GIT_URL (default the private SSH URL)
 set -euo pipefail
 
-REF="${OC_REF:-v2}"
+REF="${OC_REF:-v5}"
 # Default to HTTPS: every OutCode-Software repo uses an HTTPS origin, so this is what
 # devs are already authenticated for. Override with OC_GIT_URL=git@... (or an SSH alias)
 # if your team uses SSH keys with OutCode-Software access.
