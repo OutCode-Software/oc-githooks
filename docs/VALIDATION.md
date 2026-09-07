@@ -2,6 +2,26 @@
 
 Everything in this repo was **validated by execution**, not by inspection — Lefthook 2.1.10, Gitleaks 8.21.2, git 2.x on Linux, against throwaway repos and a real bare remote. `lefthook validate` returns **All good** on `base.yml` and the original stack files (`python`, `web`, `infra`). A clean commit runs in ~0.3s.
 
+## `node` test-runner auto-detection (2026-09-08, lefthook 2.1.12, macOS)
+
+Throwaway repos extending `stacks/node.yml`, exercising **both sides of the coverage gate on
+both runners** plus the regression guard and the empty case. `lefthook validate` = **All good**.
+
+| Case | Repo setup | Expected | Result |
+|---|---|---|---|
+| 1 | vitest + `@vitest/coverage-v8`, 100% lines | pass | ✅ `node-test` green |
+| 2 | same, uncovered multi-line fn (14.28% lines) | block | ✅ exit 1, `ERROR: Coverage for lines (14.28%) does not meet global threshold (90%)` |
+| 3 | jest, 100% lines (**regression guard**) | pass | ✅ `✓ Coverage 100% (>=90%)` |
+| 3b | jest, 44.44% lines | block | ✅ exit 1, `✗ Line coverage 44.44% is below the 90% minimum.` |
+| 4 | no runner installed | block **with a fix** | ✅ `✗ No test runner found. Install dependencies first (npm ci)…` |
+| 5 | `OC_TEST_RUNNER=vitest` explicit | uses vitest | ✅ |
+
+> **Gotcha worth knowing (not a stack bug):** with the v8 provider, a one-line uncovered
+> arrow function still counts as a *covered line* (its declaration executes) — case 2 first
+> read **100% lines / 33% statements**. The gate is a **line** floor by org policy, so
+> single-line dead code can slip under it on any JS stack, `web` included. Multi-line
+> uncovered code is caught normally.
+
 ## End-to-end validation of all 15 stacks (2026-08-10, lefthook 2.1.10)
 
 Every stack was installed into a throwaway repo via `install-into-repo.sh`, then

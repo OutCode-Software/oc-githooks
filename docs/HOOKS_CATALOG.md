@@ -38,7 +38,7 @@ All test-running stacks enforce a **≥90% line-coverage gate** on pre-push (a s
 
 - **Python** (`stacks/python.yml`): `ruff format` + `ruff check --fix` (pre-commit), no `pdb`/`breakpoint()`/`ipdb`; `mypy` + `pytest -x -q --cov --cov-fail-under=25` (pre-push).
 - **Web** (`stacks/web.yml`): `prettier --write` + `eslint --fix` (pre-commit), no `debugger`, no `.only` focused tests; `tsc --noEmit` + `vitest run --coverage` (90% gate) (pre-push).
-- **Node/NestJS** (`stacks/node.yml`): `prettier --write` + `eslint --fix` (pre-commit), no `debugger`, no `.only` tests; `tsc --noEmit` + `jest --coverage` (90% gate) (pre-push).
+- **Node/NestJS** (`stacks/node.yml`): `prettier --write` + `eslint --fix` (pre-commit), no `debugger`, no `.only` tests; `tsc --noEmit` + tests with coverage (90% gate) (pre-push). The test runner is **auto-detected — Vitest if the repo has it, else Jest**; force it with `OC_TEST_RUNNER=vitest|jest`.
 - **Flutter** (`stacks/flutter.yml`): `dart format` + `dart analyze` (pre-commit), warn on `print()`; `flutter analyze` + `flutter test --coverage` (90% gate) (pre-push).
 - **Swift** (`stacks/swift.yml`): `swiftformat` (pre-commit), warn on stray `print(`; `swiftlint --strict` + `swift test` (90% gate) (pre-push). Obj-C files get base-only coverage. Xcode-app repos swap `swift test` for `xcodebuild test` (see file comment).
 - **Kotlin** (`stacks/kotlin.yml`): `ktlint -F` + `ktlint` (pre-commit), warn on `println(`; `./gradlew test` + JaCoCo (90% gate) (pre-push). Java files get base-only coverage.

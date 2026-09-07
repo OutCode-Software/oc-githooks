@@ -27,7 +27,28 @@ pre-push:
     node-typecheck:
       run: npx --no-install tsc --noEmit
     node-test:
-      # Jest with coverage; fails if line coverage < 80% (bar rises over time).
+      # Runner is auto-detected: Vitest if the repo has it, otherwise Jest. Both enforce the
+      # same line-coverage floor (OC_MIN_COVERAGE, default 90). Override the detection with
+      # OC_TEST_RUNNER=vitest|jest when a repo has both installed.
       run: |
-        npx --no-install jest --coverage --coverageReporters=json-summary --passWithNoTests || exit 1
-        node -e 'const min=+(process.env.OC_MIN_COVERAGE||90); const p=require("./coverage/coverage-summary.json").total.lines.pct; if(p<min){console.error("✗ Line coverage "+p+"% is below the "+min+"% minimum. Add tests.");process.exit(1)} console.log("✓ Coverage "+p+"% (>="+min+"%)")'
+        runner="${OC_TEST_RUNNER:-}"
+        if [ -z "$runner" ]; then
+          if   [ -x node_modules/.bin/vitest ]; then runner=vitest
+          elif [ -x node_modules/.bin/jest   ]; then runner=jest
+          fi
+        fi
+        min="${OC_MIN_COVERAGE:-90}"
+        case "$runner" in
+          vitest)
+            npx --no-install vitest run --coverage --coverage.thresholds.lines="$min"
+            ;;
+          jest)
+            npx --no-install jest --coverage --coverageReporters=json-summary --passWithNoTests || exit 1
+            node -e 'const min=+(process.env.OC_MIN_COVERAGE||90); const p=require("./coverage/coverage-summary.json").total.lines.pct; if(p<min){console.error("✗ Line coverage "+p+"% is below the "+min+"% minimum. Add tests.");process.exit(1)} console.log("✓ Coverage "+p+"% (>="+min+"%)")'
+            ;;
+          *)
+            echo "✗ No test runner found. Install dependencies first (npm ci), or add vitest"
+            echo "  or jest to devDependencies. Have both? Set OC_TEST_RUNNER=vitest|jest."
+            exit 1
+            ;;
+        esac

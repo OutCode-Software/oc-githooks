@@ -207,6 +207,19 @@ pre-push:
         OC_MIN_COVERAGE: "75"
 ```
 
+**Node test runner:** the `node` stack auto-detects the runner — **Vitest** if
+`node_modules/.bin/vitest` is present, otherwise **Jest** — so an Express/Drizzle backend on
+Vitest and a NestJS service on Jest both use `stacks/node.yml`. Pin it explicitly when a repo
+has both installed:
+
+```yaml
+pre-push:
+  commands:
+    node-test:
+      env:
+        OC_TEST_RUNNER: vitest    # or: jest
+```
+
 > Raising a repo's own floor is safe (only stricter). Raising the **org-wide** default in
 > oc-hooks is a **breaking** change (it can fail pushes that used to pass) → ships as a new
 > major tag, per [`VERSIONING.md`](VERSIONING.md).
