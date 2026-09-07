@@ -93,7 +93,7 @@ To do it by hand instead, replace your `lefthook.yml` with:
 ```yaml
 remotes:
   - git_url: https://github.com/OutCode-Software/oc-githooks   # HTTPS (matches repo origins)
-    ref: v2                     # rolling major tag (current line); see docs/VERSIONING.md
+    ref: v5                     # rolling major tag (current line); see docs/VERSIONING.md
     refetch_frequency: 24h      # re-pull the ref at most once/day
     configs:
       - base.yml
@@ -124,13 +124,14 @@ with no per-commit network call.
 > OutCode-Software repos are cloned, so devs are already authenticated for it. If your
 > team uses **SSH** keys with OutCode-Software access, override with
 > `git_url: git@github.com:OutCode-Software/oc-githooks` (or your SSH-config alias).
-> Confirm access first: `git ls-remote <git_url> v2`. **CI** needs its own access: give
+> Confirm access first: `git ls-remote <git_url> v5`. **CI** needs its own access: give
 > the `git-hooks-mirror` workflow a deploy key or a PAT with read access to `oc-githooks`.
 
-**Getting updates:** with `ref: v2` + `refetch_frequency: 24h`, non-breaking updates
+**Getting updates:** with `ref: v5` + `refetch_frequency: 24h`, non-breaking updates
 arrive automatically within a day (we fast-forward the rolling major tag on each release). Pin an
-exact tag (`ref: v1.2.0`) for reproducible builds and bump deliberately. Breaking changes
-ship as `v2`. Full policy in [`VERSIONING.md`](VERSIONING.md).
+exact tag (`ref: v5.0.0`) for reproducible builds and bump deliberately. Breaking changes
+ship as the next major tag (`v6`), which a repo opts into deliberately. Full policy in
+[`VERSIONING.md`](VERSIONING.md).
 
 ---
 
@@ -178,15 +179,15 @@ committed `lefthook.yml` (this merges over the config pulled from `remotes`):
 ```yaml
 remotes:
   - git_url: https://github.com/OutCode-Software/oc-githooks
-    ref: v2
+    ref: v5
     configs: [base.yml, stacks/flutter.yml]
 
-# raise THIS repo's coverage floor above the org default (80):
+# raise THIS repo's coverage floor above the org default (90):
 pre-push:
   commands:
     flutter-test:              # the coverage command for your stack (table below)
       env:
-        OC_MIN_COVERAGE: "90"
+        OC_MIN_COVERAGE: "95"
 ```
 
 Coverage command name per stack: `python`→`py-test`, `web`→`web-test`, `node`→`node-test`,
