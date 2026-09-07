@@ -2,7 +2,7 @@
 
 All notable changes to oc-githooks. Format loosely follows Keep a Changelog; versions are the tags repos pin to via `remotes`.
 
-## [Unreleased]
+## [v5.1.0] — 2026-09-08
 
 ### Fixed
 - **Adoption pin was three majors stale.** `scripts/adopt-remotes.sh` still defaulted
