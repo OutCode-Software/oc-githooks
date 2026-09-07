@@ -2,6 +2,22 @@
 
 Everything in this repo was **validated by execution**, not by inspection — Lefthook 2.1.10, Gitleaks 8.21.2, git 2.x on Linux, against throwaway repos and a real bare remote. `lefthook validate` returns **All good** on `base.yml` and the original stack files (`python`, `web`, `infra`). A clean commit runs in ~0.3s.
 
+## Local-binary invocation replacing `npx` (2026-09-08, lefthook 2.1.12, npm 10.9.8, macOS)
+
+Throwaway repos extending `stacks/web.yml`. `lefthook validate` = **All good**.
+
+| Case | Repo setup | Expected | Result |
+|---|---|---|---|
+| A | no `node_modules` at all | block with an actionable message, no registry fetch | ✅ `✗ typescript is not installed here. Run: npm ci` / same for vitest, in 0.03s |
+| B | typescript + vitest + coverage installed | pre-push passes | ✅ both commands green |
+| C | prettier installed, a badly-formatted staged file | auto-fix still applies | ✅ file reformatted; `{staged_files}` substitutes correctly inside the new multi-line `run:` |
+
+> **What this fixed.** `npx --no-install tsc` does not fail fast on npm 10 — it resolves
+> `tsc` from the registry and refuses only for lack of an interactive yes. `tsc` on npm is
+> "A deprecated release of the TypeScript compiler" (2.0.4, 2016). The hook was one prompt
+> away from typechecking with the wrong compiler, and its failure message named npx internals
+> rather than the actual problem.
+
 ## `node` test-runner auto-detection (2026-09-08, lefthook 2.1.12, macOS)
 
 Throwaway repos extending `stacks/node.yml`, exercising **both sides of the coverage gate on

@@ -4,11 +4,15 @@ pre-commit:
   commands:
     rn-format:
       glob: "*.{ts,tsx,js,jsx,json}"
-      run: npx --no-install prettier --write {staged_files}
+      run: |
+        [ -x node_modules/.bin/prettier ] || { echo "✗ prettier is not installed here. Run: npm ci"; exit 1; }
+        node_modules/.bin/prettier --write {staged_files}
       stage_fixed: true
     rn-lint:
       glob: "*.{ts,tsx,js,jsx}"
-      run: npx --no-install eslint --fix {staged_files}
+      run: |
+        [ -x node_modules/.bin/eslint ] || { echo "✗ eslint is not installed here. Run: npm ci"; exit 1; }
+        node_modules/.bin/eslint --fix {staged_files}
       stage_fixed: true
     rn-no-debugger:
       glob: "*.{ts,tsx,js,jsx}"
@@ -32,9 +36,15 @@ pre-push:
   parallel: false
   commands:
     rn-typecheck:
-      run: npx --no-install tsc --noEmit
-    rn-test:
-      # Jest with coverage; fails if line coverage < 80% (bar rises over time).
       run: |
-        npx --no-install jest --coverage --coverageReporters=json-summary --passWithNoTests || exit 1
+        # NOT `npx tsc`: the npm package named "tsc" is an abandoned 2016 release
+        # of the compiler, so when a repo's deps are missing npx resolves the
+        # squatter instead of the project's TypeScript.
+        [ -x node_modules/.bin/tsc ] || { echo "✗ typescript is not installed here. Run: npm ci"; exit 1; }
+        node_modules/.bin/tsc --noEmit
+    rn-test:
+      # Jest with coverage; fails below the OC_MIN_COVERAGE line floor (default 90).
+      run: |
+        [ -x node_modules/.bin/jest ] || { echo "✗ jest is not installed here. Run: npm ci"; exit 1; }
+        node_modules/.bin/jest --coverage --coverageReporters=json-summary --passWithNoTests || exit 1
         node -e 'const min=+(process.env.OC_MIN_COVERAGE||90); const p=require("./coverage/coverage-summary.json").total.lines.pct; if(p<min){console.error("✗ Line coverage "+p+"% is below the "+min+"% minimum. Add tests.");process.exit(1)} console.log("✓ Coverage "+p+"% (>="+min+"%)")'
