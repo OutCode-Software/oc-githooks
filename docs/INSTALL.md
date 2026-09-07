@@ -155,7 +155,7 @@ in this repo.
 |---|---|---|
 | python | ruff, mypy, pytest, **pytest-cov** | coverage uses `--cov=.` (counts untested files) |
 | web | prettier, eslint, typescript, vitest, **@vitest/coverage-v8** | `tsconfig.json`, `eslint.config.js` |
-| node | prettier, eslint, typescript, jest, ts-jest | as web; set jest `collectCoverageFrom` to catch untested files |
+| node | prettier, eslint, typescript, **vitest or jest** (auto-detected) | as web; with jest set `collectCoverageFrom` to catch untested files |
 | reactnative | prettier, eslint, typescript, jest | as node |
 | flutter | dart, flutter | untested files may not lower coverage — use a barrel-import test |
 | swift | swiftformat, swiftlint | **`.swiftlint.yml` with `excluded: [.build, .swiftpm, Pods]`** (else it lints build output) |
@@ -168,6 +168,12 @@ in this repo.
 | docker | hadolint | — |
 | shell | shfmt, shellcheck | — |
 | actions | actionlint, yamllint | uses `yamllint -d relaxed`; add a `.yamllint` to customise |
+
+> **JS stacks run the repo's own binaries from `node_modules/.bin/`, never `npx`.**
+> So the dependencies must actually be installed — a repo whose `node_modules` is
+> missing fails the hook with `Run: npm ci` rather than reaching out to the registry.
+> (`npx tsc` was the specific hazard: the npm package named `tsc` is an abandoned
+> 2016 compiler release, not TypeScript.)
 
 ## Coverage threshold (central default + per-repo override)
 

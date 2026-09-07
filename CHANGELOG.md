@@ -2,6 +2,22 @@
 
 All notable changes to oc-githooks. Format loosely follows Keep a Changelog; versions are the tags repos pin to via `remotes`.
 
+## [v5.1.1] — 2026-09-08
+
+### Fixed
+- **JS stacks invoked tools through `npx`, which could run the wrong binary.** `web`,
+  `node` and `reactnative` ran `npx --no-install <tool>`. On npm 10 that flag does not
+  fail fast: npx resolves the name against the **registry** first and only then refuses,
+  so a repo with no `node_modules` got `npx canceled due to missing packages` instead of
+  anything actionable — and the name it resolved for `tsc` is the abandoned 2016 package
+  published as `tsc@2.0.4`, not TypeScript. Anyone who ran the command by hand, or
+  answered the install prompt in an interactive shell, would typecheck with a nine-year-old
+  compiler. All three stacks now execute `node_modules/.bin/<tool>` directly and fail with
+  `✗ <tool> is not installed here. Run: npm ci`. Also drops the network round-trip: the
+  missing-deps case now fails in 0.03s instead of after a registry lookup.
+- `reactnative.yml`'s `rn-test` comment still claimed an 80% floor; the default has been 90
+  since v5.0.0.
+
 ## [v5.1.0] — 2026-09-08
 
 ### Fixed
