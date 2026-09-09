@@ -2,7 +2,10 @@
 
 All notable changes to oc-githooks. Format loosely follows Keep a Changelog; versions are the tags repos pin to via `remotes`.
 
-## [Unreleased]
+## [v5.2.0] — 2026-09-09
+
+Python stack: Docker-first support, opt-in type-checking, and Django `apps/` coverage
+detection. **`apps/`-layout repos: read the coverage note below before updating.**
 
 ### Added
 - **`OC_PY_RUNNER` — run the `python` stack's pre-push checks inside a container.** The heavy
@@ -44,13 +47,16 @@ All notable changes to oc-githooks. Format loosely follows Keep a Changelog; ver
   themselves*, which are ~100% covered and inflate the total: on the validation repo `--cov=.`
   reports **55.56%** and `--cov=apps` reports **33.33%**. The new number is the honest one, but
   per [`VERSIONING.md`](docs/VERSIONING.md) a change that can fail a previously-passing push
-  belongs in a new **major** tag, not a `v5` fast-forward. Sequence accordingly — this entry is
-  filed under Unreleased so maintainers can pick the tag; the change is isolated in its own commit
-  if the other two should ship as a `v5.2.0` minor first.
+  belongs in a new **major** tag rather than a `v5` fast-forward. It ships here in `v5.2.0` as a
+  deliberate maintainer decision, so `v5`-pinned repos receive it within `refetch_frequency`
+  (24h by default) — check your number before it reaches you.
 
-  **Migrating.** An `apps/`-layout repo should check its number before adopting
-  (`pytest -q --cov=apps --cov-fail-under=0`) and pin `OC_COV_SOURCE: "."` or an explicit
-  `OC_MIN_COVERAGE` if it isn't ready.
+  **Migrating.** An `apps/`-layout repo should check its number now
+  (`pytest -q --cov=apps --cov-fail-under=0`). If it lands under your floor, set
+  `OC_COV_SOURCE: "."` to keep the old measurement, or set an explicit `OC_MIN_COVERAGE` and
+  ratchet it up. Pinning `ref: v5.1.1` also holds the old behaviour. Do this before the gate
+  starts failing pushes: `--no-verify` is all-or-nothing, so a developer bypassing the coverage
+  gate also bypasses the secret scan and the protected-branch guard in the same keystroke.
 
 ## [v5.1.1] — 2026-09-08
 
