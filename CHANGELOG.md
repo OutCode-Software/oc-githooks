@@ -2,6 +2,56 @@
 
 All notable changes to oc-githooks. Format loosely follows Keep a Changelog; versions are the tags repos pin to via `remotes`.
 
+## [Unreleased]
+
+### Added
+- **`OC_PY_RUNNER` — run the `python` stack's pre-push checks inside a container.** The heavy
+  pre-push checks run on the laptop, but Docker-first repos keep their interpreter, dependencies
+  and DB in the container, so the host cannot run `mypy` or `pytest` at all — those repos had no
+  way to adopt the stack short of forking it. Both pre-push commands now take an overridable
+  command prefix, **empty by default (today's behaviour on every existing repo)**. A Docker repo
+  sets it once in its own `lefthook.yml`:
+
+  ```yaml
+  pre-push:
+    commands:
+      py-typecheck: { env: { OC_PY_RUNNER: "docker compose run --rm -T api" } }
+      py-test:      { env: { OC_PY_RUNNER: "docker compose run --rm -T api" } }
+  ```
+
+  Deliberately **pre-push only** — prefixing the pre-commit `ruff` commands would spin up a
+  container on every commit and blow the ~2s commit budget.
+
+### Fixed
+- **`mypy .` blocked every push on untyped Django repos.** Bare `mypy .` on a codebase with no
+  annotations and no stubs reports mostly missing third-party imports — a wall of errors with no
+  actionable fix — so an untyped repo adopting the stack simply could not push. `py-typecheck`
+  now self-skips (green, with a hint naming the fix) unless mypy is available **and** the repo has
+  a mypy config (`[tool.mypy]` in `pyproject.toml`, or `[mypy]` in `mypy.ini` / `setup.cfg` /
+  `.mypy.ini`). Repos that already have a config are unaffected; type-checking becomes opt-in by
+  adding one.
+
+  The availability check consults the host `PATH` **only when `OC_PY_RUNNER` is unset** — otherwise
+  every Docker-first repo would silently self-skip type-checking, since the host has no mypy by
+  design.
+
+### Changed (BREAKING for `apps/`-layout repos)
+- **Python coverage source now defaults to `apps` when an `apps/` directory exists**, else `.` as
+  before. `--cov=.` on a Django apps-layout repo measures `migrations/` and `settings` alongside
+  application code. `OC_COV_SOURCE` still overrides, and flat services are unchanged.
+
+  **This can fail a push that previously passed.** `--cov=.` also counts the *test files
+  themselves*, which are ~100% covered and inflate the total: on the validation repo `--cov=.`
+  reports **55.56%** and `--cov=apps` reports **33.33%**. The new number is the honest one, but
+  per [`VERSIONING.md`](docs/VERSIONING.md) a change that can fail a previously-passing push
+  belongs in a new **major** tag, not a `v5` fast-forward. Sequence accordingly — this entry is
+  filed under Unreleased so maintainers can pick the tag; the change is isolated in its own commit
+  if the other two should ship as a `v5.2.0` minor first.
+
+  **Migrating.** An `apps/`-layout repo should check its number before adopting
+  (`pytest -q --cov=apps --cov-fail-under=0`) and pin `OC_COV_SOURCE: "."` or an explicit
+  `OC_MIN_COVERAGE` if it isn't ready.
+
 ## [v5.1.1] — 2026-09-08
 
 ### Fixed

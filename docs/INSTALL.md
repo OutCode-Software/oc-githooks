@@ -153,7 +153,7 @@ in this repo.
 
 | Stack | Tools | Required config / notes |
 |---|---|---|
-| python | ruff, pytest, **pytest-cov**; mypy *(optional)* | type-check is **opt-in** — needs a `[tool.mypy]` config |
+| python | ruff, pytest, **pytest-cov**; mypy *(optional)* | type-check is **opt-in** — needs a `[tool.mypy]` config; coverage root auto-detects `apps/` |
 | web | prettier, eslint, typescript, vitest, **@vitest/coverage-v8** | `tsconfig.json`, `eslint.config.js` |
 | node | prettier, eslint, typescript, **vitest or jest** (auto-detected) | as web; with jest set `collectCoverageFrom` to catch untested files |
 | reactnative | prettier, eslint, typescript, jest | as node |
@@ -200,9 +200,8 @@ Coverage command name per stack: `python`→`py-test`, `web`→`web-test`, `node
 `reactnative`→`rn-test`, `flutter`→`flutter-test`, `swift`→`swift-test`, `kotlin`→`kotlin-test`,
 `php`→`php-test`, `laravel`→`laravel-test`, `ruby`→`ruby-test`.
 
-**Python coverage scope:** the `python` stack measures `--cov=.` by default. A Django /
-`apps/`-layout repo should set `OC_COV_SOURCE=apps` so the gate measures the app packages,
-not `migrations/`/`settings` — see [Python stack knobs](#python-stack-knobs) below.
+**Python coverage scope** is auto-detected (`apps/` if present, else `.`) and overridable —
+see [Python stack knobs](#python-stack-knobs) below.
 
 **Node test runner:** the `node` stack auto-detects the runner — **Vitest** if
 `node_modules/.bin/vitest` is present, otherwise **Jest** — so an Express/Drizzle backend on
@@ -228,7 +227,7 @@ block on the command in your own committed `lefthook.yml` (it merges over `remot
 
 | Var | Default | Purpose |
 |---|---|---|
-| `OC_COV_SOURCE` | `.` | coverage measurement root (Django `apps/`-layout repos set `apps`) |
+| `OC_COV_SOURCE` | `apps` if an `apps/` dir exists, else `.` | coverage measurement root |
 | `OC_MIN_COVERAGE` | `90` | coverage floor (ratchet it up per repo) |
 | `OC_PY_RUNNER` | *(empty — runs on the host)* | command prefix used to run `mypy`/`pytest` (e.g. in Docker) |
 
@@ -259,9 +258,9 @@ pre-push:
         OC_PY_RUNNER: "docker compose run --rm -T api"
 ```
 
-The mypy-config lookup runs on the **host** (the same working tree that is mounted into the
-container), so it behaves identically either way. `-T` disables TTY allocation, which keeps
-hook output clean on older Compose versions.
+The `apps/` detection and the mypy-config lookup both run on the **host** (same working tree
+that is mounted into the container), so they behave identically either way. `-T` disables TTY
+allocation, which keeps hook output clean on older Compose versions.
 
 ## Verifying it works
 

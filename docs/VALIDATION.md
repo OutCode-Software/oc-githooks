@@ -2,6 +2,34 @@
 
 Everything in this repo was **validated by execution**, not by inspection — Lefthook 2.1.10, Gitleaks 8.21.2, git 2.x on Linux, against throwaway repos and a real bare remote. `lefthook validate` returns **All good** on `base.yml` and the original stack files (`python`, `web`, `infra`). A clean commit runs in ~0.3s.
 
+## `python` stack: opt-in mypy, `apps/` coverage detection, `OC_PY_RUNNER` (2026-09-09, lefthook 2.1.12, macOS)
+
+Throwaway repos extending `stacks/python.yml` only. Host: Python 3.9.6, pytest 8.4.2, mypy 1.19.1;
+container: `python:3.12-slim`, Docker Compose v5.3.1. `lefthook validate` = **All good**.
+
+| Case | Repo setup | Expected | Result |
+|---|---|---|---|
+| 1 | untyped, no mypy config, mypy installed | `py-typecheck` self-skips, green | ✅ `• no mypy config — skipping type-check (add [tool.mypy] to enable).` |
+| 2 | `[tool.mypy]` in `pyproject.toml`, a real type error (**regression guard**) | mypy runs and blocks | ✅ exit 1, `error: Argument 1 to "add" has incompatible type "str"` |
+| 3 | mypy config present, mypy **not** on `PATH` | skip with an install hint | ✅ `• mypy not installed — skipping type-check (add mypy + [tool.mypy] to enable).` |
+| 4 | `apps/` layout | coverage root = `apps` | ✅ report lists only `apps/**`; root-level `test_billing.py` excluded |
+| 5 | flat repo, no `apps/` (**regression guard**) | coverage root = `.` | ✅ report lists `svc.py` **and** `test_svc.py`, 100% |
+| 6 | `apps/` present + `OC_COV_SOURCE: "."` via repo `env:` | override beats auto-detect | ✅ `test_b.py` back in the report |
+| 7 | `OC_PY_RUNNER: "docker compose run --rm -T api"`, mypy **absent** from the host | both commands run in the container | ✅ `coverage: platform linux, python 3.12.14`; `mypy` → `Success: no issues found in 4 source files` |
+| 8 | real `git push` to a bare remote, 33% coverage | blocked, ref not created | ✅ `exit status 1`, `failed to push some refs`, remote has no `feat/a` |
+| 9 | real `git push`, flat repo at 100% | passes | ✅ ref created |
+
+> **Case 7 is why the mypy guard checks `OC_PY_RUNNER` first.** A bare
+> `command -v mypy || exit 0` would self-skip on every Docker-first repo — the host has no
+> mypy by design — silently disabling type-checking for exactly the repos the runner exists
+> to serve. The guard only consults the host `PATH` when no runner is set.
+
+> **Measured direction of the `apps/` default (case 4).** On the same repo, `--cov=.` reports
+> **55.56%** and `--cov=apps` reports **33.33%**. `--cov=.` counts the *test files themselves*,
+> which are ~100% covered and inflate the total; excluding them is the more honest number but
+> it means the new default can **fail a push that previously passed** on an `apps/`-layout
+> repo, not only relax one. Sequenced accordingly — see `CHANGELOG.md`.
+
 ## Local-binary invocation replacing `npx` (2026-09-08, lefthook 2.1.12, npm 10.9.8, macOS)
 
 Throwaway repos extending `stacks/web.yml`. `lefthook validate` = **All good**.
