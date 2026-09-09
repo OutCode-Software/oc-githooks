@@ -36,7 +36,7 @@ Every hook we run today, plus the full menu of what git hooks *can* do and what 
 
 All test-running stacks enforce a **≥90% line-coverage gate** on pre-push (a solid baseline that rises over time).
 
-- **Python** (`stacks/python.yml`): `ruff format` + `ruff check --fix` (pre-commit), no `pdb`/`breakpoint()`/`ipdb`; `mypy` + `pytest -x -q --cov --cov-fail-under=25` (pre-push).
+- **Python/Django** (`stacks/python.yml`): `ruff format` + `ruff check --fix` (pre-commit), no `pdb`/`breakpoint()`/`ipdb`; `mypy` + `pytest -x -q --cov=<src> --cov-fail-under` (90% gate) (pre-push). **`mypy` is opt-in** — it self-skips unless the repo has a `[tool.mypy]`/`[mypy]` config. The coverage root is **auto-detected — `apps/` if present, else `.`**; override with `OC_COV_SOURCE`. Docker-first repos run both pre-push commands in the container via `OC_PY_RUNNER`.
 - **Web** (`stacks/web.yml`): `prettier --write` + `eslint --fix` (pre-commit), no `debugger`, no `.only` focused tests; `tsc --noEmit` + `vitest run --coverage` (90% gate) (pre-push).
 - **Node/NestJS** (`stacks/node.yml`): `prettier --write` + `eslint --fix` (pre-commit), no `debugger`, no `.only` tests; `tsc --noEmit` + tests with coverage (90% gate) (pre-push). The test runner is **auto-detected — Vitest if the repo has it, else Jest**; force it with `OC_TEST_RUNNER=vitest|jest`.
 - **Flutter** (`stacks/flutter.yml`): `dart format` + `dart analyze` (pre-commit), warn on `print()`; `flutter analyze` + `flutter test --coverage` (90% gate) (pre-push).

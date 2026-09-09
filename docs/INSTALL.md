@@ -153,7 +153,7 @@ in this repo.
 
 | Stack | Tools | Required config / notes |
 |---|---|---|
-| python | ruff, mypy, pytest, **pytest-cov** | coverage uses `--cov=.` (counts untested files) |
+| python | ruff, pytest, **pytest-cov**; mypy *(optional)* | type-check is **opt-in** — needs a `[tool.mypy]` config; coverage root auto-detects `apps/` |
 | web | prettier, eslint, typescript, vitest, **@vitest/coverage-v8** | `tsconfig.json`, `eslint.config.js` |
 | node | prettier, eslint, typescript, **vitest or jest** (auto-detected) | as web; with jest set `collectCoverageFrom` to catch untested files |
 | reactnative | prettier, eslint, typescript, jest | as node |
@@ -200,18 +200,8 @@ Coverage command name per stack: `python`→`py-test`, `web`→`web-test`, `node
 `reactnative`→`rn-test`, `flutter`→`flutter-test`, `swift`→`swift-test`, `kotlin`→`kotlin-test`,
 `php`→`php-test`, `laravel`→`laravel-test`, `ruby`→`ruby-test`.
 
-**Python coverage scope:** the `python` stack measures `--cov=.` by default. A Django /
-`apps/`-layout repo should set `OC_COV_SOURCE=apps` (alongside `OC_MIN_COVERAGE`) so the
-gate measures the app packages, not `migrations/`/`settings`:
-
-```yaml
-pre-push:
-  commands:
-    py-test:
-      env:
-        OC_COV_SOURCE: apps
-        OC_MIN_COVERAGE: "75"
-```
+**Python coverage scope** is auto-detected (`apps/` if present, else `.`) and overridable —
+see [Python stack knobs](#python-stack-knobs) below.
 
 **Node test runner:** the `node` stack auto-detects the runner — **Vitest** if
 `node_modules/.bin/vitest` is present, otherwise **Jest** — so an Express/Drizzle backend on
@@ -229,6 +219,48 @@ pre-push:
 > Raising a repo's own floor is safe (only stricter). Raising the **org-wide** default in
 > oc-hooks is a **breaking** change (it can fail pushes that used to pass) → ships as a new
 > major tag, per [`VERSIONING.md`](VERSIONING.md).
+
+## Python stack knobs
+
+The `python` stack reads three environment variables. All are set per-repo with an `env:`
+block on the command in your own committed `lefthook.yml` (it merges over `remotes`).
+
+| Var | Default | Purpose |
+|---|---|---|
+| `OC_COV_SOURCE` | `apps` if an `apps/` dir exists, else `.` | coverage measurement root |
+| `OC_MIN_COVERAGE` | `90` | coverage floor (ratchet it up per repo) |
+| `OC_PY_RUNNER` | *(empty — runs on the host)* | command prefix used to run `mypy`/`pytest` (e.g. in Docker) |
+
+**Type-checking is opt-in.** `py-typecheck` runs only when mypy is available *and* the repo
+has a mypy config (`[tool.mypy]` in `pyproject.toml`, or `[mypy]` in `mypy.ini` / `setup.cfg` /
+`.mypy.ini`). Without one it prints a hint and passes — bare `mypy .` on an untyped Django
+codebase reports mostly missing third-party stubs and blocks every push. Enable it by adding
+the config:
+
+```toml
+[tool.mypy]
+ignore_missing_imports = true
+```
+
+**Docker-first repos** (interpreter, dependencies and DB live in the container, not on the
+laptop) set `OC_PY_RUNNER` once so the two pre-push commands run where the toolchain actually
+is. Keep it on **pre-push only** — never prefix the pre-commit `ruff` commands, since spinning
+up a container on every commit destroys the ~2s commit budget:
+
+```yaml
+pre-push:
+  commands:
+    py-typecheck:
+      env:
+        OC_PY_RUNNER: "docker compose run --rm -T api"
+    py-test:
+      env:
+        OC_PY_RUNNER: "docker compose run --rm -T api"
+```
+
+The `apps/` detection and the mypy-config lookup both run on the **host** (same working tree
+that is mounted into the container), so they behave identically either way. `-T` disables TTY
+allocation, which keeps hook output clean on older Compose versions.
 
 ## Verifying it works
 
