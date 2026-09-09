@@ -4,36 +4,8 @@ All notable changes to oc-githooks. Format loosely follows Keep a Changelog; ver
 
 ## [Unreleased]
 
-### Added
-- **`OC_PY_RUNNER` — run the `python` stack's pre-push checks inside a container.** The heavy
-  pre-push checks run on the laptop, but Docker-first repos keep their interpreter, dependencies
-  and DB in the container, so the host cannot run `mypy` or `pytest` at all — those repos had no
-  way to adopt the stack short of forking it. Both pre-push commands now take an overridable
-  command prefix, **empty by default (today's behaviour on every existing repo)**. A Docker repo
-  sets it once in its own `lefthook.yml`:
-
-  ```yaml
-  pre-push:
-    commands:
-      py-typecheck: { env: { OC_PY_RUNNER: "docker compose run --rm -T api" } }
-      py-test:      { env: { OC_PY_RUNNER: "docker compose run --rm -T api" } }
-  ```
-
-  Deliberately **pre-push only** — prefixing the pre-commit `ruff` commands would spin up a
-  container on every commit and blow the ~2s commit budget.
-
-### Fixed
-- **`mypy .` blocked every push on untyped Django repos.** Bare `mypy .` on a codebase with no
-  annotations and no stubs reports mostly missing third-party imports — a wall of errors with no
-  actionable fix — so an untyped repo adopting the stack simply could not push. `py-typecheck`
-  now self-skips (green, with a hint naming the fix) unless mypy is available **and** the repo has
-  a mypy config (`[tool.mypy]` in `pyproject.toml`, or `[mypy]` in `mypy.ini` / `setup.cfg` /
-  `.mypy.ini`). Repos that already have a config are unaffected; type-checking becomes opt-in by
-  adding one.
-
-  The availability check consults the host `PATH` **only when `OC_PY_RUNNER` is unset** — otherwise
-  every Docker-first repo would silently self-skip type-checking, since the host has no mypy by
-  design.
+Targeting **v6.0.0** — held out of v5.2.0 because `v5` must not fast-forward across a
+change that can fail a previously-passing push (see [`VERSIONING.md`](docs/VERSIONING.md)).
 
 ### Changed (BREAKING for `apps/`-layout repos)
 - **Python coverage source now defaults to `apps` when an `apps/` directory exists**, else `.` as
@@ -44,13 +16,58 @@ All notable changes to oc-githooks. Format loosely follows Keep a Changelog; ver
   themselves*, which are ~100% covered and inflate the total: on the validation repo `--cov=.`
   reports **55.56%** and `--cov=apps` reports **33.33%**. The new number is the honest one, but
   per [`VERSIONING.md`](docs/VERSIONING.md) a change that can fail a previously-passing push
-  belongs in a new **major** tag, not a `v5` fast-forward. Sequence accordingly — this entry is
-  filed under Unreleased so maintainers can pick the tag; the change is isolated in its own commit
-  if the other two should ship as a `v5.2.0` minor first.
+  belongs in a new **major** tag, not a `v5` fast-forward. The other two python-stack changes
+  shipped without it in v5.2.0; this one waits for `v6.0.0`.
 
   **Migrating.** An `apps/`-layout repo should check its number before adopting
   (`pytest -q --cov=apps --cov-fail-under=0`) and pin `OC_COV_SOURCE: "."` or an explicit
   `OC_MIN_COVERAGE` if it isn't ready.
+
+## [v5.2.0] — 2026-09-09
+
+Unblocks Django and Docker-first repos on the `python` stack. Both changes are no-ops for
+every repo that passes today, so `v5` fast-forwards to this release.
+
+### Added
+- **`OC_PY_RUNNER` — run the `python` stack's pre-push checks inside a container.** The heavy
+  pre-push checks run on the laptop, but Docker-first repos keep their interpreter, dependencies
+  and DB in the container, so the host cannot run `mypy` or `pytest` at all — those repos had no
+  way to adopt the stack short of forking it. Both pre-push commands now take an overridable
+  command prefix, **empty by default (byte-identical behaviour on every existing repo)**. A
+  Docker repo sets it once in its own `lefthook.yml`:
+
+  ```yaml
+  pre-push:
+    commands:
+      py-typecheck: { env: { OC_PY_RUNNER: "docker compose run --rm -T api" } }
+      py-test:      { env: { OC_PY_RUNNER: "docker compose run --rm -T api" } }
+  ```
+
+  It must be set **per command** — a top-level `env:` or a hook-level `pre-push: env:` is
+  silently ignored by Lefthook. Deliberately **pre-push only**: prefixing the pre-commit `ruff`
+  commands would spin up a container on every commit and blow the ~2s commit budget.
+
+### Fixed
+- **`mypy .` blocked every push on untyped Django repos.** Bare `mypy .` on a codebase with no
+  annotations and no stubs reports mostly missing third-party imports — a wall of errors with no
+  actionable fix — so an untyped repo adopting the stack simply could not push. `py-typecheck`
+  now self-skips (green, with a hint naming the fix) unless mypy is available **and** the repo has
+  a mypy config (`[tool.mypy]` in `pyproject.toml`, or `[mypy]` in `mypy.ini` / `setup.cfg` /
+  `.mypy.ini`). Repos that already have a config are unaffected; type-checking becomes opt-in by
+  adding one. A blocking check only ever becomes green here, so this cannot fail a push that
+  previously passed.
+
+  The availability check consults the host `PATH` **only when `OC_PY_RUNNER` is unset** — otherwise
+  every Docker-first repo would silently self-skip type-checking, since the host has no mypy by
+  design.
+
+### Not in this release
+- The Python coverage source **`apps/` auto-detection** is merged on `main` but deliberately held
+  back: it can fail a push that previously passed (on the validation repo `--cov=.` reports 55.56%
+  and `--cov=apps` reports 33.33%, because `--cov=.` counts the ~100%-covered test files), which
+  [`VERSIONING.md`](docs/VERSIONING.md) defines as **breaking** — "never as a same-major
+  fast-forward". It ships in `v6.0.0`. Repos wanting it now can set `OC_COV_SOURCE: apps`
+  explicitly, which has been supported since v5.0.0.
 
 ## [v5.1.1] — 2026-09-08
 
