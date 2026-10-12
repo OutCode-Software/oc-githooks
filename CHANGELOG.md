@@ -4,6 +4,11 @@ All notable changes to oc-githooks. Format loosely follows Keep a Changelog; ver
 
 ## [Unreleased]
 
+### Docs
+- Git Flow policy 1.1: **production deploys are manual.** A tag builds and tests the release;
+  someone then runs the *Deploy production* workflow to deploy that tag's artifact. Staging
+  still deploys on every merge to `main`. No change to the hooks.
+
 ## [6.0.0] — 2026-10-13
 
 Major release: the base hooks now implement the [Git Flow policy](docs/GIT-FLOW-POLICY.md),

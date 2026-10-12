@@ -1,7 +1,7 @@
 # VERSIONING — how oc-githooks is versioned and how updates reach repos
 
 > These `v`-prefixed tags version **oc-githooks itself**, and the rolling `vN` tag moves by
-> design. Project release tags follow the [Git Flow policy](GIT-FLOW-POLICY.md#4-release-to-production-tag-main)
+> design. Project release tags follow the [Git Flow policy](GIT-FLOW-POLICY.md#4-release-to-production-tag-main-then-deploy)
 > instead (`1.4.0`, never moved). Don't install the hooks in this repo.
 
 oc-githooks is consumed two ways (see [`INSTALL.md`](INSTALL.md)). Only the
