@@ -31,7 +31,7 @@ one difference: **`main` stays the default branch**, because it is the released 
 
 ## Principles
 
-- **Defense-in-depth:** local hooks are fast feedback; GitHub rulesets + the CI mirror are the authoritative gate. A local hook that blocks must have a CI equivalent.
+- **Defense-in-depth:** local hooks are fast feedback, not the only gate. On GitHub Free, private repos get no branch rulesets, so the deploy guard and the daily audit catch what `--no-verify` lets through ([CI.md](docs/CI.md)); the opt-in CI mirror adds lint and tests.
 - **Portable:** hooks run on macOS and Linux. Avoid GNU-only flags (e.g. `sed -i` without a suffix); prefer `perl -i`, POSIX `grep -E`, and the `git symbolic-ref` / `git cat-file` plumbing already used.
 - **One fact, one home:** don't duplicate policy across base and stack files.
 
@@ -42,3 +42,22 @@ brew install lefthook gitleaks
 # make a scratch repo, drop base.yml + a stack in .githooks/, add a lefthook.yml that extends them, then:
 lefthook install && lefthook validate
 ```
+
+## Repository layout
+
+```
+oc-githooks/
+├── base.yml                         # base hooks: every repo inherits these
+├── stacks/                          # one file per language stack or overlay
+├── .lefthook/pre-push/ref-guard.sh  # Git Flow ref rules (a Lefthook script, see base.yml)
+├── examples/                        # per-repo lefthook.yml to copy (copy method)
+├── configs/                         # starter tool configs (.swiftlint.yml, .sqlfluff, …)
+├── ci/hooks.yml                     # CI mirror template (opt-in, see docs/CI.md)
+├── scripts/adopt-remotes.sh         # `remotes` setup (recommended)
+├── scripts/install-into-repo.sh     # copy method
+├── tests/run.sh                     # end-to-end test of base.yml through `remotes`
+├── .gitleaks.toml                   # secret-scan allowlist template
+└── docs/                            # policy, install, catalog, versioning, validation
+```
+
+Run `tests/run.sh` before opening a PR that touches `base.yml` or the ref guard.
