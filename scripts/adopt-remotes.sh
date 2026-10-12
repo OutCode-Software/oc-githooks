@@ -8,7 +8,7 @@
 # copies the gitleaks allowlist (remotes can't fetch non-lefthook files), drops any
 # starter tool configs, gitignores generated dirs, then runs `lefthook install`.
 #
-# Env overrides:  OC_REF (default v6)   OC_GIT_URL (default the private SSH URL)
+# Env overrides:  OC_REF (default v6)   OC_GIT_URL (default the HTTPS URL)
 set -euo pipefail
 
 REF="${OC_REF:-v6}"
