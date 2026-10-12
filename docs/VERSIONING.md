@@ -44,9 +44,13 @@ remotes:
 
 ## Release checklist (maintainers)
 
-1. Merge changes to `main`; update `CHANGELOG.md` with the new version + date, and the
-   `OC-Hooks: vN.x.y` trailer value in `base.yml` (the audit reads it). Run `tests/run.sh`.
-2. Tag the immutable release: `git tag -a vN.x.y -m "…" && git push origin vN.x.y`.
+1. Changes land on `develop` through `CU-<clickup-id>` PRs (squash-merged), as in
+   [CONTRIBUTING](../CONTRIBUTING.md#branches-and-releases). On a release branch, update
+   `CHANGELOG.md` with the new version + date and the `OC-Hooks: vN.x.y` trailer value in
+   `base.yml` (the audit reads it). Run `tests/run.sh`.
+2. Open a PR `develop → main` and merge it with a **merge commit**. `main` is what consumers
+   can see as released. Tag the immutable release on that merge commit:
+   `git switch main && git pull && git tag -a vN.x.y -m "…" && git push origin vN.x.y`.
 3. Fast-forward the rolling major (non-breaking only):
    `git tag -f -a vN -m "…" && git push -f origin vN`.
 4. Announce in the team channel; link the CHANGELOG entry.
