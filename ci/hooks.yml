@@ -7,7 +7,7 @@ name: git-hooks-mirror
 on:
   pull_request:
   push:
-    branches: [develop, stage, prod, main]
+    branches: [develop, main]
 
 jobs:
   hooks:

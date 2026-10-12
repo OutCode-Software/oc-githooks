@@ -8,20 +8,21 @@ Outcode's shared **git hooks** standard — one baseline every repository inheri
 
 ## What it does
 
-**Fast local feedback on every commit and push, backed by free un-bypassable server-side gates** (defense-in-depth — local hooks can be skipped with `--no-verify`, so GitHub **branch-protection rulesets + secret scanning** are the real gate; they cost no Actions minutes). An Actions lint/test mirror is opt-in later — see [`docs/CI.md`](docs/CI.md).
+**Enforces OutCode's [Git Flow policy](docs/GIT-FLOW-POLICY.md) on every commit and push.** On GitHub Free, private repos get no branch protection, so these hooks are the first of three layers: a deploy guard on each server and a daily audit catch what `--no-verify` lets through (see [`docs/CI.md`](docs/CI.md)). An Actions lint/test mirror is opt-in later.
 
 On **commit** (`pre-commit` + `commit-msg`):
 
 - 🔐 **Secret scan** of staged changes (Gitleaks) — blocks commits containing keys/tokens/credentials.
 - 🚫 **Credential-file guard** — blocks `.env`, `*.pem`, keystores, `*.tfstate`, `.npmrc`, service-account JSON… (allows `.env.example`/`.sample`/`.template`).
 - 📦 **Large-file guard** (>5 MB → use Git LFS), **merge-conflict-marker** check, **whitespace/EOF** auto-fix.
-- 🌿 **Protected-branch guard** — no direct commits to `develop` / `stage` / `prod` / `main`.
-- 📝 **Commit message** must follow [Conventional Commits](docs/COMMIT_CONVENTION.md) (`feat(scope): …`, `fix: …`, …); warns on missing ClickUp task ID; blocks the `Co-Authored-By: Claude` trailer.
+- 🌿 **Protected-branch guard** — no direct commits to `main` / `develop`.
+- 📝 **Commit message** must follow [Conventional Commits](docs/COMMIT_CONVENTION.md) (`feat(scope): …`, `fix: …`, …); blocks the `Co-Authored-By: Claude` trailer.
+- 🏷️ **Trailers** — every commit gets `ClickUp: CU-<id>` (from the branch name, so the ClickUp task keeps its commit history after a squash merge) and `OC-Hooks: <version>` (the audit flags commits without it).
 
 On **push** (`pre-push`):
 
-- 🚧 **Protected-branch push guard** — blocks pushing to a protected branch, **including remapped `git push origin HEAD:main`**.
-- 🧹 Blocks pushing **WIP / fixup! / squash!** commits; warns on non-standard branch names.
+- 🚧 **Ref guard** — blocks pushing to `main` / `develop` (**including remapped `git push origin HEAD:main`** and deletions), branch names other than `CU-<clickup-id>`, and tags that aren't `MAJOR.MINOR.PATCH` (no `v`) or that would move or delete an existing tag. Runs on every push, including tag-only and empty pushes.
+- 🧹 Blocks pushing **WIP / fixup! / squash!** commits.
 - Runs the stack's **type-check + tests** (see each stack layer).
 
 **Language stacks:** **Python/Django** (ruff, pytest, opt-in mypy), **Web** (prettier, eslint, tsc, vitest, no `debugger`/`.only`), **Node/NestJS** (prettier, eslint, tsc, jest), **Flutter** (dart format/analyze, flutter test), **Swift** (swiftformat, swiftlint, swift test), **Kotlin** (ktlint, gradle test), **React Native** (prettier, eslint, tsc, jest, no `debugger`/`console.log`), **PHP** (php-cs-fixer, phpstan, phpunit), **Laravel** (pint, larastan, `artisan test`), **Ruby/Rails** (rubocop, rspec), **Infra** (terraform fmt/validate, tflint, trivy). Test stacks enforce a **≥90% coverage gate** on pre-push.
@@ -80,11 +81,14 @@ oc-githooks/
 ├── ci/hooks.yml              # CI mirror TEMPLATE (opt-in later; see docs/CI.md)
 ├── scripts/install-into-repo.sh   # copy method
 ├── scripts/adopt-remotes.sh       # one-command `remotes` (auto-update) setup
+├── .lefthook/pre-push/ref-guard.sh  # Git Flow ref rules (a Lefthook script, see base.yml)
+├── tests/run.sh              # end-to-end test of base.yml through `remotes`
 ├── .gitleaks.toml            # secret-scan allowlist template
 └── docs/
     ├── INSTALL.md            # detailed install, `remotes` path, per-stack prerequisites
     ├── CI.md                 # server-side gate: free GitHub protections now, Actions later
     ├── VERSIONING.md         # tag scheme + how updates reach repos
+    ├── GIT-FLOW-POLICY.md    # the branch / review / release policy these hooks enforce
     ├── COMMIT_CONVENTION.md  # the commit-message rules, with examples
     ├── HOOKS_CATALOG.md      # every hook we run + the full menu of options
     ├── VALIDATION.md         # what was tested and how to re-run it
@@ -93,11 +97,11 @@ oc-githooks/
 
 ## How updates propagate
 
-Published at [`OutCode-Software/oc-githooks`](https://github.com/OutCode-Software/oc-githooks) (private). The recommended setup is Lefthook **`remotes`** — a repo's `lefthook.yml` points at `oc-githooks` pinned to `ref: v5` (current line) with `refetch_frequency: 24h`, so non-breaking updates arrive automatically when we fast-forward the rolling major tag. Copying files in is still supported for the pilot. Full mechanics and the two-tier tag policy are in [`docs/INSTALL.md`](docs/INSTALL.md) and [`docs/VERSIONING.md`](docs/VERSIONING.md).
+Published at [`OutCode-Software/oc-githooks`](https://github.com/OutCode-Software/oc-githooks) (private). The recommended setup is Lefthook **`remotes`** — a repo's `lefthook.yml` points at `oc-githooks` pinned to `ref: v6` (current line) with `refetch_frequency: 24h`, so non-breaking updates arrive automatically when we fast-forward the rolling major tag. Copying files in is still supported for the pilot. Full mechanics and the two-tier tag policy are in [`docs/INSTALL.md`](docs/INSTALL.md) and [`docs/VERSIONING.md`](docs/VERSIONING.md).
 
 ## Design & policy background
 
-This implements the decisions in the *Outcode Git Hooks Standard — Design & Rollout Plan* and fills the open "git-hooks / pre-commit standard" item in **GitHub Governance SOP §7.4**. Protected branches are set to `develop` / `stage` / `prod` / `main` (Governance SOP naming). The commit convention (Conventional Commits) and the warn→block dates for the ClickUp-ID / branch-name checks are pending final ratification in the DM working session (see [`docs/INSTALL.md`](docs/INSTALL.md#open-decisions)).
+This implements the decisions in the *Outcode Git Hooks Standard — Design & Rollout Plan* and fills the open "git-hooks / pre-commit standard" item in **GitHub Governance SOP §7.4**. Since v6 the branch, tag and commit rules follow the [Git Flow policy](docs/GIT-FLOW-POLICY.md): `main` and `develop` are the protected branches, task and hotfix branches are `CU-<clickup-id>`, and releases are `MAJOR.MINOR.PATCH` tags. Run `tests/run.sh` to check the rules end to end.
 
 ## License / ownership
 

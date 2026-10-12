@@ -46,6 +46,7 @@ This copies:
 |---|---|
 | `base.yml` | `.githooks/base.yml` |
 | `stacks/<stack>.yml` | `.githooks/stacks/<stack>.yml` |
+| `.lefthook/pre-push/ref-guard.sh` | `.lefthook/pre-push/ref-guard.sh` (the pre-push ref guard; Lefthook looks for scripts in the repo's `.lefthook/`) |
 | `.gitleaks.toml` | `.gitleaks.toml` |
 | `examples/lefthook.<stack>.yml` | `lefthook.yml` |
 
@@ -93,7 +94,7 @@ To do it by hand instead, replace your `lefthook.yml` with:
 ```yaml
 remotes:
   - git_url: https://github.com/OutCode-Software/oc-githooks   # HTTPS (matches repo origins)
-    ref: v5                     # rolling major tag (current line); see docs/VERSIONING.md
+    ref: v6                     # rolling major tag (current line); see docs/VERSIONING.md
     refetch_frequency: 24h      # re-pull the ref at most once/day
     configs:
       - base.yml
@@ -124,13 +125,13 @@ with no per-commit network call.
 > OutCode-Software repos are cloned, so devs are already authenticated for it. If your
 > team uses **SSH** keys with OutCode-Software access, override with
 > `git_url: git@github.com:OutCode-Software/oc-githooks` (or your SSH-config alias).
-> Confirm access first: `git ls-remote <git_url> v5`. **CI** needs its own access: give
+> Confirm access first: `git ls-remote <git_url> v6`. **CI** needs its own access: give
 > the `git-hooks-mirror` workflow a deploy key or a PAT with read access to `oc-githooks`.
 
-**Getting updates:** with `ref: v5` + `refetch_frequency: 24h`, non-breaking updates
+**Getting updates:** with `ref: v6` + `refetch_frequency: 24h`, non-breaking updates
 arrive automatically within a day (we fast-forward the rolling major tag on each release). Pin an
-exact tag (`ref: v5.0.0`) for reproducible builds and bump deliberately. Breaking changes
-ship as the next major tag (`v6`), which a repo opts into deliberately. Full policy in
+exact tag (`ref: v6.0.0`) for reproducible builds and bump deliberately. Breaking changes
+ship as the next major tag (`v7`), which a repo opts into deliberately. Full policy in
 [`VERSIONING.md`](VERSIONING.md).
 
 ---
@@ -185,7 +186,7 @@ committed `lefthook.yml` (this merges over the config pulled from `remotes`):
 ```yaml
 remotes:
   - git_url: https://github.com/OutCode-Software/oc-githooks
-    ref: v5
+    ref: v6
     configs: [base.yml, stacks/flutter.yml]
 
 # raise THIS repo's coverage floor above the org default (90):
@@ -282,19 +283,25 @@ lefthook run pre-push   --all-files
 
 ## Bypassing (rare, and still caught by CI)
 
-`git commit --no-verify` / `git push --no-verify` skip local hooks — but the free
-server-side gates still catch the important cases: **secret scanning + push protection**
-block a leaked secret regardless, and **branch-protection rulesets** block direct pushes
-to protected branches (see [`CI.md`](CI.md)). Use `--no-verify` only in a genuine
-emergency, not as a habit; for a Gitleaks false positive, add an allowlist entry to
+`git commit --no-verify` / `git push --no-verify` skip local hooks. On GitHub Free,
+nothing server-side blocks the push, but it is still caught: the **deploy guard** refuses
+anything that isn't released through the policy, and the **daily audit** reports direct
+pushes, unapproved merges and stray tags (see [`CI.md`](CI.md) and
+[`GIT-FLOW-POLICY.md`](GIT-FLOW-POLICY.md#7-enforcement)). Commits made with
+`--no-verify` still carry the `OC-Hooks` and `ClickUp` trailers. Use `--no-verify` only in
+a genuine emergency, not as a habit; for a Gitleaks false positive, add an allowlist entry to
 `.gitleaks.toml` instead.
 
 ---
 
-## Open decisions
+## Decisions
 
-One value is still pending ratification (DM working session):
+All decided in the [Git Flow policy](GIT-FLOW-POLICY.md), which v6 implements:
 
-1. **Commit convention.** Conventional Commits is enabled; confirm this is the org standard and set the warn→block date for the ClickUp-ID and branch-name checks.
-
-**Resolved:** the protected-branch set is `develop / stage / prod / main` (the Git→ClickUp doc's `staging` was dropped in favour of the Governance SOP naming). Enforced by the `protected` list in `base.yml` and mirrored in `ci/hooks.yml`.
+- **Protected branches:** `main` and `develop` only. `stage` / `prod` / `staging` /
+  `production` / `dev` / `master` are retired during migration (policy §8).
+- **Branch names:** `CU-<clickup-id>` only (`^CU-[0-9a-z]+$`), blocked on push. Hotfixes use
+  the same format.
+- **Commit convention:** Conventional Commits, blocked on commit. The ClickUp ID is added
+  automatically as a trailer, so the old "missing task ID" warning is gone.
+- **Release tags:** `MAJOR.MINOR.PATCH` with no `v`, never moved or deleted, blocked on push.

@@ -18,10 +18,14 @@ cp "$HERE/base.yml"            "$TARGET/.githooks/base.yml"
 cp "$HERE/stacks/$STACK.yml"   "$TARGET/.githooks/stacks/$STACK.yml"
 cp "$HERE/.gitleaks.toml"      "$TARGET/.gitleaks.toml"
 cp "$HERE/examples/lefthook.$STACK.yml" "$TARGET/lefthook.yml"
+# Lefthook scripts live in the repo's .lefthook/ dir (the pre-push ref guard).
+mkdir -p "$TARGET/.lefthook/pre-push"
+cp "$HERE/.lefthook/pre-push/ref-guard.sh" "$TARGET/.lefthook/pre-push/ref-guard.sh"
+chmod +x "$TARGET/.lefthook/pre-push/ref-guard.sh"
 # NOTE: the GitHub Actions CI mirror is NOT installed by default (it costs Actions
-# minutes and needs per-stack toolchain setup). Use the free server-side gates instead
-# — GitHub branch-protection rulesets + secret scanning. See docs/CI.md to opt into a
-# reusable-workflow CI later.
+# minutes and needs per-stack toolchain setup). On GitHub Free, private repos get no
+# branch protection, so the Git Flow policy is enforced by these hooks, the deploy
+# guard and the daily audit. See docs/GIT-FLOW-POLICY.md §7 and docs/CI.md.
 
 # Starter tool configs for stacks that need them (swift/sql are required for the
 # hooks to run at all). Never overwrite a config the repo already has.
@@ -44,5 +48,5 @@ echo "Next:"
 echo "  cd $TARGET"
 echo "  brew install lefthook gitleaks   # or npm i -g lefthook"
 echo "  lefthook install"
-echo "  git add .githooks lefthook.yml .gitleaks.toml"
-echo "  # server-side gate = free GitHub branch protection + secret scanning (see docs/CI.md)"
+echo "  git add .githooks .lefthook lefthook.yml .gitleaks.toml"
+echo "  # commit on a CU-<clickup-id> branch, then open a PR into develop (docs/GIT-FLOW-POLICY.md)"

@@ -107,7 +107,7 @@ jobs:
 #   name: git-hooks-mirror
 #   on:
 #     pull_request:
-#     push: { branches: [develop, stage, prod, main] }
+#     push: { branches: [develop, main] }
 #   jobs:
 #     mirror:
 #       uses: OutCode-Software/oc-githooks/.github/workflows/mirror.yml@v2

@@ -2,9 +2,58 @@
 
 All notable changes to oc-githooks. Format loosely follows Keep a Changelog; versions are the tags repos pin to via `remotes`.
 
-## [Unreleased]
+## [Unreleased] — planned as v6.0.0
+
+Major release: the base hooks now implement the [Git Flow policy](docs/GIT-FLOW-POLICY.md),
+proven end to end in a local Git Flow pilot. Repos opt in with `ref: v6`; `v5`
+stays where it is for repos not yet migrated.
+
+### Changed (BREAKING)
+- **Protected branches are `main` and `develop` only** (were `develop / stage / prod / main`).
+  The policy retires `stage` / `prod`; the branch-name rule below blocks pushing them.
+- **Branch names must be `CU-<clickup-id>` (`^CU-[0-9a-z]+$`), blocked on push.** v5 only
+  warned, and expected `feature/ENS-123-desc`. Rename open branches before moving to v6.
+- **Release tags must be `MAJOR.MINOR.PATCH` with no `v`, and are never moved or deleted**,
+  blocked on push (new).
+- **`min_version: 2.0.0`** for Lefthook (was 1.7.0), for remote scripts.
+- The Python coverage-source change below is also breaking, and ships here as planned.
+
+### Fixed
+- **The push guard missed pushes that change no files.** Lefthook skips every pre-push
+  *command* when a push changes no files, so in v5 an empty commit pushed to `develop`, a
+  deletion of `develop` on the remote, and any tag push went through with no check at all
+  (reproduced with Lefthook 2.2.1; `tests/run.sh` fails 16 of 30 checks against v5). The ref
+  rules now live in a Lefthook *script*, `.lefthook/pre-push/ref-guard.sh`, which always
+  runs and is delivered through `remotes` like the configs. `install-into-repo.sh` copies it
+  for the copy method.
 
 ### Added
+- **`prepare-commit-msg` trailers** on every commit, including `--no-verify` ones:
+  `ClickUp: CU-<id>` from the branch name (so a squash-merged task keeps its commit history
+  in ClickUp) and `OC-Hooks: v6.0.0` (the daily audit flags commits without it).
+- **`docs/GIT-FLOW-POLICY.md`**: the policy itself, now kept next to the hooks that enforce it.
+- **`tests/run.sh`**: end-to-end test of `base.yml` consumed through `remotes`, against a
+  throwaway bare repo (30 checks).
+
+### Removed
+- The `clickup-task-id` commit-msg warning (Jira-style `ENS-123`), replaced by the trailer.
+- The `branch-name` warning, replaced by the blocking rule in the ref guard.
+
+### Docs
+- `CI.md`, `INSTALL.md` and the README no longer say branch rulesets and secret push
+  protection are free gates: on GitHub Free they return 403 for private repos. They now
+  describe the hooks + deploy guard + daily audit layers.
+
+### Migrating from v5
+1. Rename open branches to `CU-<clickup-id>` (`git branch -m CU-<id>`, push, reopen the PR).
+2. Make sure release tags are `X.Y.Z` with no `v`; existing `v1.2.3` tags stay, new ones
+   follow the policy.
+3. Change `ref: v5` → `ref: v6` in `lefthook.yml` and run `lefthook install`; copy-method
+   repos re-run `scripts/install-into-repo.sh`, which now also adds `.lefthook/`.
+4. Apply the repository settings in policy §6 (default branch `develop`, squash + merge
+   commits, auto-delete branches).
+
+### Added (Python)
 - **`OC_PY_RUNNER` — run the `python` stack's pre-push checks inside a container.** The heavy
   pre-push checks run on the laptop, but Docker-first repos keep their interpreter, dependencies
   and DB in the container, so the host cannot run `mypy` or `pytest` at all — those repos had no

@@ -1,32 +1,28 @@
-# CI — the server-side gate (and why we default to the free one)
+# CI — the server-side gate on GitHub Free
 
 Local lefthook hooks are **fast feedback only** — a developer can skip them with
 `git commit --no-verify`. Defense-in-depth needs a server-side gate that *can't* be
 bypassed. There are two kinds, and only one costs GitHub Actions minutes.
 
-## Default: the FREE server-side gates (recommended for now)
+## Default: what GitHub Free can and can't enforce
 
-Outcode is on a free GitHub plan (~2000 Actions minutes/month across 20+ repos), so we
-**do not ship an Actions CI workflow by default.** Instead, turn on the two protections
-that are **GitHub settings, not workflows** — they cost **zero** minutes:
+OutCode is on **GitHub Free with private repos**. On that plan, **branch-protection rulesets,
+required reviews, tag protection and secret-scanning push protection are not available**
+(the API returns 403). Nothing on GitHub's side can stop a direct push, so don't design
+around it. The [Git Flow policy](GIT-FLOW-POLICY.md#7-enforcement) is enforced in three
+layers instead:
 
-### 1. Branch-protection rulesets
-Repo → **Settings → Rules → Rulesets → New branch ruleset**. Target `develop`, `stage`,
-`prod`, `main` and enable:
-- **Restrict deletions**
-- **Require a pull request before merging** (≥1 approval)
-- **Block force pushes**
+1. **These hooks** on every laptop (bypassable with `--no-verify`; every commit is stamped
+   with an `OC-Hooks:` trailer so a missing install shows up in the audit).
+2. **A deploy guard on each server** (for example a root-owned `/opt/deploy/deploy.sh` on each EC2):
+   it re-checks the ref and commit against GitHub before installing anything. Workflow
+   files can be edited on any branch; files on the server can't.
+3. **The daily audit**: reports direct pushes, PRs merged without a non-author approval,
+   tags not on `main`, and commits without the `OC-Hooks` trailer.
 
-This makes direct pushes to protected branches impossible on the server — the same rule
-our local `protected-branch-guard` enforces, but un-bypassable.
-
-### 2. Secret scanning + push protection
-Repo → **Settings → Code security → Secret protection** → enable **Secret scanning** and
-**Push protection**. GitHub then **blocks a push that contains a secret even if the dev
-used `--no-verify`** — the server-side twin of our gitleaks hook. Free on all repos.
-
-With these two on, the critical, un-bypassable protections (no direct pushes, no leaked
-secrets) are covered at no minute cost. Lint/typecheck/test stay as local fast feedback.
+If a repo is **public**, or the org moves to a paid plan, also turn on the GitHub settings
+(zero Actions minutes): a branch ruleset on `main` and `develop` (restrict deletions,
+require a PR with ≥1 approval, block force pushes) and secret scanning with push protection.
 
 ## Later (optional): an Actions CI mirror via a reusable workflow
 
@@ -44,7 +40,7 @@ nothing until you opt in. To turn CI on for a repo:
    ```yaml
    # .github/workflows/hooks.yml
    name: git-hooks-mirror
-   on: { pull_request: {}, push: { branches: [develop, stage, prod, main] } }
+   on: { pull_request: {}, push: { branches: [develop, main] } }
    jobs:
      mirror:
        uses: OutCode-Software/oc-githooks/.github/workflows/mirror.yml@v2
@@ -70,6 +66,7 @@ project picks it up via `@v2`.
 | Layer | Where | Cost | Status |
 |---|---|---|---|
 | lefthook hooks | dev laptop | free | ✅ default (bypassable) |
-| Branch-protection rulesets | GitHub | free | ✅ turn on per repo |
-| Secret scanning + push protection | GitHub | free | ✅ turn on per repo |
+| Deploy guard | each server | free | ✅ per deploy target (see the Git Flow policy) |
+| Daily audit | audit host | free | ✅ org-wide |
+| Branch rulesets + secret push protection | GitHub | free on public / paid plans only | ⏸️ not available for private repos on Free |
 | Actions lint/test mirror | GitHub Actions | **minutes** | ⏸️ opt-in later (reusable workflow) |

@@ -13,7 +13,13 @@ Every hook we run today, plus the full menu of what git hooks *can* do and what 
 | `large-file-guard` | ✅ | blocks files >5 MB (use Git LFS) |
 | `merge-conflict-markers` | ✅ | blocks `<<<<<<< ` / `>>>>>>> ` markers (won't false-positive on Markdown `=======` headings) |
 | `normalize-whitespace` | auto-fix | trims trailing whitespace, ensures final newline (text files; re-stages) |
-| `protected-branch-guard` | ✅ | no direct commits to `develop/stage/prod/main` |
+| `protected-branch-guard` | ✅ | no direct commits to `main` / `develop` |
+
+### `prepare-commit-msg` (base)
+
+| Command | Blocks? | What it does |
+|---|---|---|
+| `trailers` | — | adds `OC-Hooks: v6.x.y` (the audit flags commits without it) and `ClickUp: CU-<id>` taken from the branch name. Runs even with `--no-verify` |
 
 ### `commit-msg` (base)
 
@@ -21,16 +27,14 @@ Every hook we run today, plus the full menu of what git hooks *can* do and what 
 |---|---|---|
 | `conventional-commit` | ✅ | enforces the [commit convention](COMMIT_CONVENTION.md) |
 | `subject-length` | warn | warns over 72 chars |
-| `clickup-task-id` | warn | warns if no `ENS-123`-style ID present |
 | `no-ai-coauthor` | ✅ | blocks the `Co-Authored-By: Claude` trailer |
 
 ### `pre-push` (base)
 
 | Command | Blocks? | What it does |
 |---|---|---|
-| `protected-branch-push-guard` | ✅ | blocks push to a protected branch, **including `git push origin HEAD:main`** (reads git's ref list via `use_stdin`, `priority:1`) |
+| `ref-guard.sh` (script) | ✅ | the Git Flow ref rules, from git's ref list on stdin: no push to `main` / `develop` (**including `git push origin HEAD:main`** and deletions); branches must be `CU-<clickup-id>`; tags must be `MAJOR.MINOR.PATCH` with no `v` and are never moved or deleted. A Lefthook *script* because Lefthook skips pre-push *commands* when a push changes no files (tag pushes, deletions, empty commits) |
 | `no-wip-fixup-push` | ✅ | blocks pushing `WIP` / `fixup!` / `squash!` commits |
-| `branch-name` | warn | expects `feature|fix|chore|hotfix/<TASKID>-desc` |
 
 ### Per-stack layers
 
@@ -70,7 +74,7 @@ Git has no client hook that fires *after* a push. The client push lifecycle ends
 | Hook | Fires when | Can block? | Status |
 |---|---|---|---|
 | `pre-commit` | before a commit is created | ✅ | **In use** |
-| `prepare-commit-msg` | before the editor opens | ✅ | **Candidate** — auto-insert the ClickUp ID from the branch name |
+| `prepare-commit-msg` | before the editor opens | ✅ | **In use** — `OC-Hooks` + `ClickUp` trailers |
 | `commit-msg` | after the message is written | ✅ | **In use** |
 | `post-commit` | after the commit | ❌ (advisory) | **Candidate** — reminders/notifications only |
 | `pre-merge-commit` | before a merge commit | ✅ | Rarely |
@@ -101,7 +105,7 @@ Git has no client hook that fires *after* a push. The client push lifecycle ends
 **Kotlin:** forbid committed `local.properties` · block leftover `@Ignore` on tests.
 **React Native:** forbid committed `ios/Pods/` · block committed `.env` bundles.
 **Infra:** forbid `*.tfvars` with obvious secrets · require provider lockfile.
-**commit-msg:** make ClickUp-ID a *block* after grace period · forbid trailing period · imperative-mood lint.
+**commit-msg:** forbid trailing period · imperative-mood lint.
 **pre-push:** Gitleaks over the outgoing commit range (catches `--no-verify` commits) · block force-push to shared branches.
 **post-merge / post-checkout:** "your lockfile changed — run `npm ci` / `flutter pub get` / `uv sync`" · auto `git lfs pull`.
 
