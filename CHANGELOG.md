@@ -2,7 +2,9 @@
 
 All notable changes to oc-githooks. Format loosely follows Keep a Changelog; versions are the tags repos pin to via `remotes`.
 
-## [Unreleased] — planned as v6.0.0
+## [Unreleased]
+
+## [6.0.0] — 2026-10-13
 
 Major release: the base hooks now implement the [Git Flow policy](docs/GIT-FLOW-POLICY.md),
 proven end to end in a local Git Flow pilot. Repos opt in with `ref: v6`; `v5`
