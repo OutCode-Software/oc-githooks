@@ -47,6 +47,6 @@ Trialling oc-githooks on a real repo? Please copy the block below into a ClickUp
 2. **Setup friction** — if adoption took more than ~5 minutes, where did it snag?
 3. **Speed** — if any commit felt slow, which hook, and on what kind of change?
 4. **Missing / unwanted checks** — especially per-stack (the right `ruff`/`eslint`/`dart`/`terraform` invocations for *your* repo).
-5. **The two open decisions** — the [protected-branch set and commit convention](INSTALL.md#open-decisions): does the current behaviour fit your project's git flow?
+5. **The Git Flow rules** — the [policy](GIT-FLOW-POLICY.md) the hooks enforce (protected branches, `CU-<id>` names, release tags): does anything block legitimate work on your project?
 
 Small, specific reports beat general impressions — a one-line "hook X blocked file Y which was fine" is exactly what we need.

@@ -1,5 +1,9 @@
 # VERSIONING — how oc-githooks is versioned and how updates reach repos
 
+> These `v`-prefixed tags version **oc-githooks itself**, and the rolling `vN` tag moves by
+> design. Project release tags follow the [Git Flow policy](GIT-FLOW-POLICY.md#4-release-to-production-tag-main)
+> instead (`1.4.0`, never moved). Don't install the hooks in this repo.
+
 oc-githooks is consumed two ways (see [`INSTALL.md`](INSTALL.md)). Only the
 `remotes` model auto-updates; the copy model is manual. This doc defines the tag
 scheme that makes `remotes` updates predictable.
@@ -8,9 +12,9 @@ scheme that makes `remotes` updates predictable.
 
 | Tag | Mutable? | Points at | Who pins it |
 |---|---|---|---|
-| `v5.0.0` | **No** — never moves | one exact release | repos wanting fully reproducible hooks |
-| `v5` | **Yes** — fast-forwarded | the latest `v5.x.y` | **current line** — most repos (auto-receive non-breaking updates) |
-| `v4` | Yes | the latest `v4.x.y` | repos not yet migrated past the last breaking change |
+| `v6.0.0` | **No** — never moves | one exact release | repos wanting fully reproducible hooks |
+| `v6` | **Yes** — fast-forwarded | the latest `v6.x.y` | **current line** — repos on the Git Flow policy |
+| `v5` | Yes | the latest `v5.x.y` | repos not yet migrated to Git Flow (old branch names) |
 
 - **Patch/minor** (new stack, new non-blocking check, fix): cut `vN.(x+1).0` or
   `vN.x.(y+1)`, then **fast-forward `vN`** to it.
@@ -26,7 +30,7 @@ scheme that makes `remotes` updates predictable.
 ```yaml
 remotes:
   - git_url: git@github.com:OutCode-Software/oc-githooks
-    ref: v5
+    ref: v6
     refetch_frequency: 24h      # always | never | <duration e.g. 24h/30m>
     configs: [base.yml, stacks/<stack>.yml]
 ```
@@ -36,11 +40,12 @@ remotes:
 - To force an update now: re-run `lefthook install`, or clear the cache at
   `.git/info/lefthook-remotes/` and re-run it.
 
-**Recommended Outcode default:** `ref: v5` (current line) + `refetch_frequency: 24h`.
+**Recommended Outcode default:** `ref: v6` (current line) + `refetch_frequency: 24h`.
 
 ## Release checklist (maintainers)
 
-1. Merge changes to `main`; update `CHANGELOG.md` with the new version + date.
+1. Merge changes to `main`; update `CHANGELOG.md` with the new version + date, and the
+   `OC-Hooks: vN.x.y` trailer value in `base.yml` (the audit reads it). Run `tests/run.sh`.
 2. Tag the immutable release: `git tag -a vN.x.y -m "…" && git push origin vN.x.y`.
 3. Fast-forward the rolling major (non-breaking only):
    `git tag -f -a vN -m "…" && git push -f origin vN`.

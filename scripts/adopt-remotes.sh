@@ -8,10 +8,10 @@
 # copies the gitleaks allowlist (remotes can't fetch non-lefthook files), drops any
 # starter tool configs, gitignores generated dirs, then runs `lefthook install`.
 #
-# Env overrides:  OC_REF (default v5)   OC_GIT_URL (default the private SSH URL)
+# Env overrides:  OC_REF (default v6)   OC_GIT_URL (default the private SSH URL)
 set -euo pipefail
 
-REF="${OC_REF:-v5}"
+REF="${OC_REF:-v6}"
 # Default to HTTPS: every OutCode-Software repo uses an HTTPS origin, so this is what
 # devs are already authenticated for. Override with OC_GIT_URL=git@... (or an SSH alias)
 # if your team uses SSH keys with OutCode-Software access.
@@ -109,7 +109,7 @@ echo "✓ Adopted oc-githooks ($STACK, remotes @ $REF) in $TARGET"
 echo "Next:"
 echo "  cd \"$TARGET\""
 echo "  git add lefthook.yml .gitleaks.toml .gitignore"
-echo "  # commit on a feature branch, then open an MR into develop"
+echo "  # commit on a CU-<clickup-id> branch, then open a PR into develop (docs/GIT-FLOW-POLICY.md)"
 echo "  # teammates: install lefthook + gitleaks, then run 'lefthook install' once"
-echo "  # server-side gate = free GitHub branch protection + secret scanning (no Actions"
-echo "  #   minutes). Actions CI is opt-in later via a reusable workflow — see docs/CI.md"
+echo "  # GitHub Free can't block pushes server-side: the deploy guard and the daily audit"
+echo "  #   back these hooks up (docs/GIT-FLOW-POLICY.md §7). Actions CI is opt-in: docs/CI.md"

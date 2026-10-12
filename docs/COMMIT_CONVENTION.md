@@ -1,6 +1,6 @@
 # Commit message convention
 
-Enforced by the `commit-msg` hook. We use **Conventional Commits**.
+Enforced by the `commit-msg` hook. We use **Conventional Commits**. PR titles follow the same format: task branches are squash-merged into `develop`, so the PR title becomes the commit subject ([Git Flow policy §2](GIT-FLOW-POLICY.md#2-day-to-day-work-task-branch--develop)).
 
 ```
 <type>(<optional scope>)<optional !>: <subject>
@@ -35,18 +35,18 @@ Enforced by the `commit-msg` hook. We use **Conventional Commits**.
 - **A space after the colon** and a non-empty subject are required.
 - Git's own **`Merge …` / `Revert "…"` / `fixup! …` / `squash! …`** messages pass through; the hook is skipped during merge/rebase.
 - **Subject length** over 72 chars → *warning* (not a block).
-- **ClickUp task ID** (e.g. `ENS-123`) missing → *warning* so the ClickUp status automation can link the commit. (Include it in the subject or body.)
+- **ClickUp task ID** — you don't type it. The `prepare-commit-msg` hook adds a `ClickUp: CU-<id>` trailer from the branch name (branches are `CU-<clickup-id>`), plus an `OC-Hooks:` trailer. ClickUp links any commit whose message contains `CU-<id>`, and the trailers survive a squash merge, so the task keeps its commit history after the branch is deleted.
 - **`Co-Authored-By: Claude`** trailer → *blocked* (Outcode policy).
 
 ## Validated examples
 
 | Subject | Result |
 |---|---|
-| `feat(auth): add SSO login ENS-9` | ✅ pass |
-| `fix: null check on token ENS-9` | ✅ pass |
-| `chore(docs): update README ENS-9` | ✅ pass |
-| `feat(api)!: breaking change ENS-9` | ✅ pass |
-| `refactor(payments/stripe): tidy ENS-9` | ✅ pass |
+| `feat(auth): add SSO login` | ✅ pass |
+| `fix: null check on token` | ✅ pass |
+| `chore(docs): update README` | ✅ pass |
+| `feat(api)!: breaking change` | ✅ pass |
+| `refactor(payments/stripe): tidy` | ✅ pass |
 | `Merge branch 'develop'` | ✅ pass (auto-message) |
 | `Revert "feat: x"` | ✅ pass (auto-message) |
 | `added some things` | ❌ blocked (no type) |
