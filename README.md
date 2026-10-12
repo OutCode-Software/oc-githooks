@@ -2,7 +2,9 @@
 
 Outcode's shared **git hooks** standard — one baseline every repository inherits, with thin per-stack layers for each language and framework we use (11 language stacks + 4 cross-cutting overlays). Built on [Lefthook](https://lefthook.dev) (a single fast Go binary, no language runtime required) plus [Gitleaks](https://github.com/gitleaks/gitleaks) for secret scanning.
 
-> **Status: pilot.** This is a draft for real repos to trial and give feedback on before it becomes the org standard. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to send feedback, and [`docs/FEEDBACK.md`](docs/FEEDBACK.md) for the template.
+> **Current release: [v6.0.0](CHANGELOG.md#600--2026-10-13)** (rolling tag `v6`), which implements the Git Flow policy. Repos not yet migrated stay on `v5` until they [upgrade](#upgrading-from-v5).
+>
+> **Status: pilot.** Real repos are trialling it before it becomes the org standard. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to send feedback, and [`docs/FEEDBACK.md`](docs/FEEDBACK.md) for the template.
 
 ---
 
@@ -49,9 +51,29 @@ lefthook install                   # activate the hooks in this clone
 git add lefthook.yml .gitleaks.toml
 ```
 
-That's it — the next commit runs the hooks, and non-breaking updates arrive automatically. `adopt-remotes.sh` also **verifies the remote actually fetched** (a failed fetch fails silently — see [`docs/INSTALL.md`](docs/INSTALL.md)).
+That's it — the next commit runs the hooks, and non-breaking updates arrive automatically. `adopt-remotes.sh` pins `ref: v6` (override with `OC_REF`) and **verifies the remote actually fetched** (a failed fetch fails silently — see [`docs/INSTALL.md`](docs/INSTALL.md)).
+
+- **Adopt on a `CU-<clickup-id>` branch** cut from `develop`: the hooks block commits on `main` / `develop`, so commit the hook files on the task branch and open a PR into `develop`. Needs Lefthook ≥ 2.0.
+- **The stack's checks expect its tools** (e.g. `node`: prettier, eslint, tsc, jest). If a repo doesn't use one, skip that command in the repo's own `lefthook.yml`, next to `remotes:`:
+
+  ```yaml
+  pre-push:
+    commands:
+      node-typecheck: { skip: true }   # plain JavaScript, no tsc
+  ```
 
 > **Fallback: copy method.** Only if a repo/CI can't reach the private `oc-githooks` (air-gapped, no access), copy the files in instead — this creates a committed `.githooks/` folder that must be updated by hand. See [Option A in `docs/INSTALL.md`](docs/INSTALL.md#option-a--copy-the-files-fallback).
+
+### Upgrading from v5
+
+v6 is a breaking release. `v5` doesn't move, so nothing changes until a repo opts in. Per repo:
+
+1. Rename open branches to `CU-<clickup-id>` (`git branch -m CU-<id>`, push, reopen the PR). Pushing `feature/…`, `stage` or `prod` is blocked from v6.
+2. New release tags are `X.Y.Z` with no `v`; existing `v1.2.3` tags stay.
+3. Change `ref: v5` → `ref: v6` in `lefthook.yml` and run `lefthook install` (copy-method repos re-run `scripts/install-into-repo.sh`, which now also adds `.lefthook/`).
+4. Apply the repository settings in [policy §6](docs/GIT-FLOW-POLICY.md#repository-settings): default branch `develop`, squash + merge commits, auto-delete branches.
+
+Details: [CHANGELOG → Migrating from v5](CHANGELOG.md#migrating-from-v5) and [policy §9](docs/GIT-FLOW-POLICY.md#9-migration-of-existing-repos).
 
 ---
 
