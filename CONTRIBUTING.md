@@ -16,6 +16,19 @@ Use the template in [`docs/FEEDBACK.md`](docs/FEEDBACK.md). Focus on: false posi
 6. **Update docs in the same change** — the hook and its entry in `HOOKS_CATALOG.md` / `COMMIT_CONVENTION.md` move together.
 7. **Bump `CHANGELOG.md`** and, once published, the version tag.
 
+## Branches and releases
+
+This repo follows the same [Git Flow](docs/GIT-FLOW-POLICY.md) as every OutCode project, with
+one difference: **`main` stays the default branch**, because it is the released line.
+
+- Branch from `develop` as `CU-<clickup-id>` (create a ClickUp task), open a PR into `develop`,
+  get one approval from someone other than the author, then **squash and merge**.
+- Release: a PR `develop → main` merged with a **merge commit**, then the version tags in
+  [`docs/VERSIONING.md`](docs/VERSIONING.md#release-checklist-maintainers). This repo's own `vN`
+  tags are the one exception to "tags never move": the rolling major tag is how `remotes`
+  delivers updates.
+- Nobody commits or pushes to `main` or `develop` directly.
+
 ## Principles
 
 - **Defense-in-depth:** local hooks are fast feedback; GitHub rulesets + the CI mirror are the authoritative gate. A local hook that blocks must have a CI equivalent.
