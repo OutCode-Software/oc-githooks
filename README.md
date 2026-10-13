@@ -21,7 +21,7 @@ Built on [Lefthook](https://lefthook.dev) and [Gitleaks](https://github.com/gitl
 | | No `WIP` / `fixup!` / `squash!` commits |
 | | The stack's type-check and tests pass (90% coverage on test stacks) |
 
-On GitHub Free, private repos have no branch protection, so these hooks are the first line. A deploy guard on each server and a daily audit catch what `--no-verify` lets through ([CI.md](docs/CI.md)).
+On GitHub Free, private repos have no branch protection, so these hooks are the first line. CI on every PR (from `/outcode-standard:ci`) and the daily audit catch what `--no-verify` lets through ([CI.md](docs/CI.md)).
 
 ## Stacks
 
