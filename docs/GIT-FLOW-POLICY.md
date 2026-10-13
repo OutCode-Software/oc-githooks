@@ -1,10 +1,10 @@
 # OutCode Git Flow Policy
 
-**Version:** 1.1 · **Status:** Final, ready for sign-off · **Applies to:** every repository in `OutCode-Software`
-**Owner:** Engineering (Ashwin Shrestha) · **Last updated:** 2026-10-13
+**Version:** 1.2 · **Status:** Final, ready for sign-off · **Applies to:** every repository in `OutCode-Software`
+**Owner:** Engineering (Ashwin Shrestha) · **Last updated:** 2026-10-14
 
 This policy defines how code moves from a developer's branch to production. oc-githooks
-(v6 and later), the daily audit and the deploy guards are built against it.
+(v6 and later), outcode-standard's CI/CD workflows and the daily audit are built against it.
 
 ---
 
@@ -96,8 +96,8 @@ and repeat §2–§3. Nobody commits directly to `main`.
    git push origin 1.4.0
    ```
 
-4. When that run has passed, **deploy it by hand**: in GitHub, **Actions → Deploy production →
-   Run workflow**, enter `1.4.0`. This deploys the artifact the tag built, without rebuilding
+4. When that run has passed, **deploy it by hand**: in GitHub, **Actions → deploy-production →
+   Run workflow** (from `main`), enter `1.4.0`. This deploys the artifact the tag built, without rebuilding
    it, and the run records who pressed the button. Production never deploys automatically.
 
 **Rules**
@@ -106,9 +106,8 @@ and repeat §2–§3. Nobody commits directly to `main`.
 - **Tag only commits that are on `main`** and have already been deployed to staging. The
   one exception is the hotfix flow in §5.
 - **Who can tag and deploy:** any developer, once the DM has signed off.
-- **Rolling back:** run Deploy production with the previous tag (while its build artifact is
-  still kept), or switch to the previous
-  release on the server (§8).
+- **Rolling back:** run deploy-production with the previous tag (while its build artifact is
+  still kept, up to 90 days), or use the project's own rollback (§8).
 - Tags are **never moved or deleted**. If a release is bad, ship a new version.
 
 ---
@@ -131,7 +130,7 @@ released yet.
 2. **Open the PR into `main` before tagging**, so the fix is reviewed before it ships.
 3. **Tag the approved commit on the hotfix branch, then run Deploy production for that tag**
    (§4). This sends only the last release plus the fix to production, and none of the
-   unreleased work on `main`. The deploy guard
+   unreleased work on `main`. The release guard
    accepts a tag that isn't on `main` only when its commit is the head of a PR into `main`.
 4. **Merge into `main` with a merge commit, never squash.** This keeps the tagged commit in
    `main`'s history.
@@ -175,13 +174,13 @@ These are available on GitHub Free and are part of adopting the policy:
 
 OutCode is on **GitHub Free**, which can't enforce branch protection, required reviews,
 tag rules or protected environments on private repositories. It also can't limit who may
-run the Deploy production workflow: anyone with write access can press it. The policy is enforced with
+run the deploy-production workflow: anyone with write access can press it. The policy is enforced with
 three layers instead:
 
 | Layer | What it does | Limits |
 |---|---|---|
 | **oc-githooks v6 (Lefthook)** | Blocks commits on `main`/`develop`; pushes to `main`/`develop` (including `HEAD:main` and deletions); branch names other than `CU-<id>`; tags that aren't `MAJOR.MINOR.PATCH` or that move or delete an existing tag; non-Conventional commit messages. Adds the `ClickUp` and `OC-Hooks` trailers | Only works after `lefthook install`. It can be bypassed with `--no-verify`, and it doesn't run for GitHub web edits |
-| **Deploy guard on each server** | Re-checks every deployment against GitHub itself: staging only from `main`; production only from a valid tag whose commit is on `main` or is the head of a PR into `main`. Logs every attempt | A workflow can't edit it, but it trusts the artifact the workflow hands it (artifact signing is phase 2) |
+| **CI and the release guard** (`/outcode-standard:ci`) | CI checks every PR and push to `develop`. The release guard checks every release build and production deploy: tag format, tag on `main` (or the head of a hotfix PR into `main`), a manual run started from `main`, and a passed release build | Advisory on Free: a failing check can't block a merge. The guard runs inside the workflow, so a workflow edited on a branch could skip it; the audit reports who deployed what |
 | **Daily audit + weekly summary** | Reports direct pushes, PRs merged without a non-author approval, tags not on `main`, who created each tag, who deployed each release to production, and commits without the `OC-Hooks` trailer | Detects violations after the fact. It doesn't prevent them |
 
 **Follow-up:** the audit runs daily, and a weekly summary covers all projects. The
@@ -196,25 +195,31 @@ from the `prepare` script).
 
 | Event | CI | CD |
 |---|---|---|
-| Push to a task branch, PR into `develop` | None. The developer's pre-push hook runs lint and tests | — |
-| Push to `develop` | Lint + test | — |
-| PR `develop` → `main` | Lint + test + build | — |
-| Merge to `main` | Build the artifact | Deploy to **staging** |
-| Tag `X.Y.Z` | Lint + test + build the artifact from the tagged commit | None: the release is ready to deploy |
-| **Deploy production** (run by hand) | — | Deploy that tag's artifact to **production** |
+| PR into `develop` or `main`, push to `develop` | Format + lint + type-check + test + build | — |
+| Merge to `main` | CI | Deploy to **staging** |
+| Tag `X.Y.Z` | Release guard, then CI from the tagged commit, which builds the release artifact | None: the release is ready to deploy |
+| **deploy-production** (run by hand, from `main`, with the tag) | Release guard, including a passed release build | Deploy that tag's release to **production** |
 
-- **CI and CD run in different places.** CI runs untrusted branch code, so its runners hold
-  **no deploy credentials**. CD runs on a runner on (or dedicated to) each environment, which
-  can deploy only that environment.
-- **Production deploys only when someone runs Deploy production.** It's a manual workflow
-  (`workflow_dispatch`) that takes the tag, finds that tag's passed build and deploys its
-  artifact. On GitHub Team or Enterprise the same step can also require a named approver
-  (a protected environment); GitHub Free doesn't offer that for private repos.
-- **Production servers never build or test.** They install a finished artifact and restart.
-- Every deployment goes through the deploy guard (§7). After a deploy, the workflow checks
-  that the running service reports the expected commit.
-- Keep the last few releases on each server, so a rollback is a switch to the previous
-  release, not a rebuild.
+- **The workflows come from `/outcode-standard:ci`** (outcode-standard). `ci.yml`,
+  `build-release.yml` and `release-guard.yml` are standard-owned: the same in every project
+  of a stack, updated by re-running the skill. `deploy-staging.yml` and
+  `deploy-production.yml` are project-owned.
+- **How a project deploys is its own choice**: any target (EC2, ECS, a platform, an app
+  store), any runner, any tooling. The one rule: **deployments are automated and run in the
+  pipeline**, never from a developer's machine or by hand on a server. Credentials live
+  with the runner (for example an instance role) or in Actions secrets, never in the repo.
+- **Production deploys only when someone runs deploy-production.** It's a manual workflow
+  (`workflow_dispatch`) with no automatic trigger. On GitHub Team or Enterprise the same
+  step can also require a named approver (a protected environment); GitHub Free doesn't
+  offer that for private repos. The run records who deployed which tag.
+- **CI runs on every PR.** The hooks catch problems before the push; CI is the shared check
+  that a reviewer sees. On Free it can't be made required, so a red check is a reason not
+  to merge, not a block. Runners are chosen with the `CI_RUNS_ON` variable (self-hosted
+  runners: the ci-workflows runbook).
+- **Recommended, not required:** keep deploy credentials off CI runners; deploy the
+  artifact the tag built instead of rebuilding; keep the last few releases where you
+  deploy, so a rollback is a switch rather than a rebuild; a server-side deploy guard for
+  projects that want one.
 
 ---
 
@@ -228,8 +233,9 @@ All active repositories move to this flow **within 30 days** of the policy's app
 4. Adopt oc-githooks **v6** (`scripts/adopt-remotes.sh <stack> <repo>`, or set `ref: v6` in an
    existing `remotes` block). v6 blocks branch names other than `CU-<id>`, so rename open
    branches first.
-5. Change the deployment workflows: a merge to `main` deploys staging, a tag builds the
-   release, and Deploy production (run by hand) deploys it, through a deploy guard.
+5. Run `/outcode-standard:ci`, then move the project's deployment into `deploy-staging.yml`
+   (a merge to `main`) and `deploy-production.yml` (run by hand with a tag). Retire old
+   deploy workflows and any deploy scripts run by hand.
 6. After the first production release from a tag, freeze the old `stage` / `staging` /
    `prod` / `production` / `dev` branches, then delete or archive them. The hooks allow
    deleting remote branches for this.
@@ -240,9 +246,6 @@ All active repositories move to this flow **within 30 days** of the policy's app
 
 These are outside version 1.0 and will be decided separately:
 
-- **Production secrets for other deploy targets.** The pilot covers AWS EC2 with a runner on
-  each server. VPS, Vercel/Netlify and other targets need their own answer, because on the
-  Free plan repository secrets can be read by any workflow on any branch.
 - **Mobile apps:** what a merge to `main` deploys (TestFlight or a Play internal track), and
   how the build number relates to the tag.
-- **Artifact signing or promotion** between CI and the deploy guard (phase 2).
+- **Artifact signing or promotion** between the release build and the deployment (phase 2).
