@@ -4,6 +4,22 @@ All notable changes to oc-githooks. Format loosely follows Keep a Changelog; ver
 
 ## [Unreleased]
 
+## [6.1.0] — 2026-10-13
+
+### Fixed
+- **New projects no longer fail the stack checks before they have any code.** A fresh repo
+  (only `package.json` or `pyproject.toml`, no tools installed yet) failed the commit with
+  `prettier is not installed` and the push with `typescript is not installed`, `No test runner
+  found`, `No test files found` or `TS18003: No inputs were found`. Each stack check now looks
+  for the project's source files first; with none, it passes with a note (`• no JS/TS source
+  yet: node-test skipped`). As soon as the first source file is committed, every check is
+  enforced as before: a missing tool still fails, and code without tests still fails the
+  coverage gate. Config files (`*.config.*`, dotfiles, `*.d.ts`, `Package.swift`) don't count
+  as source. Covers node, web, reactnative, python, flutter, swift, kotlin, php, laravel and ruby.
+- `node`, `web`, `reactnative`: the type-check is skipped when the repo has no TypeScript files
+  (plain JavaScript), instead of failing on `tsc` with no `tsconfig.json`.
+- The base `OC-Hooks:` trailer now reads `v6.1.0`.
+
 ### Docs
 - Git Flow policy 1.1: **production deploys are manual.** A tag builds and tests the release;
   someone then runs the *Deploy production* workflow to deploy that tag's artifact. Staging
