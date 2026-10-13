@@ -16,12 +16,21 @@ pre-push:
   parallel: false
   commands:
     swift-lint:
-      run: swiftlint --strict
+      run: |
+        # Nothing to check in a project with no Swift source yet (a new repo): pass with a note.
+        if [ -z "$(git ls-files -- '*.swift' ':!:Package.swift' | head -1)" ]; then
+          echo "• no Swift source yet: swift-lint skipped"; exit 0
+        fi
+        swiftlint --strict
     swift-test:
       # SPM default. Xcode app repos: replace the test command with e.g.
       #   xcodebuild test -scheme <Scheme> -destination '<Destination>' -enableCodeCoverage YES
       # and adapt the coverage extraction below (xcrun xccov).
       run: |
+        # Nothing to check in a project with no Swift source yet (a new repo): pass with a note.
+        if [ -z "$(git ls-files -- '*.swift' ':!:Package.swift' | head -1)" ]; then
+          echo "• no Swift source yet: swift-test skipped"; exit 0
+        fi
         swift test --enable-code-coverage || exit 1
         prof=$(find .build -name '*.profdata' 2>/dev/null | head -1)
         bin=$(find .build -type d -name '*.xctest' 2>/dev/null | head -1)

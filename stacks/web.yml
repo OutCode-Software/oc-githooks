@@ -4,13 +4,21 @@ pre-commit:
     web-format:
       glob: "*.{ts,tsx,js,jsx,mjs,cjs,json,css,scss,md}"
       run: |
-        [ -x node_modules/.bin/prettier ] || { echo "✗ prettier is not installed here. Run: npm ci"; exit 1; }
+        if [ ! -x node_modules/.bin/prettier ]; then
+          # A new repo with no JS/TS source yet has nothing to check: pass with a note.
+          [ -z "$(git ls-files -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.mjs' '*.cjs' ':!:*.config.*' ':!:*.d.ts' ':!:.*' | head -1)" ] && { echo "• prettier not installed, no JS/TS source yet: web-format skipped"; exit 0; }
+          echo "✗ prettier is not installed here. Run: npm ci"; exit 1
+        fi
         node_modules/.bin/prettier --write {staged_files}
       stage_fixed: true
     web-lint:
       glob: "*.{ts,tsx,js,jsx}"
       run: |
-        [ -x node_modules/.bin/eslint ] || { echo "✗ eslint is not installed here. Run: npm ci"; exit 1; }
+        if [ ! -x node_modules/.bin/eslint ]; then
+          # A new repo with no JS/TS source yet has nothing to check: pass with a note.
+          [ -z "$(git ls-files -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.mjs' '*.cjs' ':!:*.config.*' ':!:*.d.ts' ':!:.*' | head -1)" ] && { echo "• eslint not installed, no JS/TS source yet: web-lint skipped"; exit 0; }
+          echo "✗ eslint is not installed here. Run: npm ci"; exit 1
+        fi
         node_modules/.bin/eslint --fix {staged_files}
       stage_fixed: true
     web-no-debugger:
@@ -30,6 +38,10 @@ pre-push:
   commands:
     web-typecheck:
       run: |
+        # Nothing to check in a project with no TypeScript source yet (a new repo): pass with a note.
+        if [ -z "$(git ls-files -- '*.ts' '*.tsx' ':!:*.config.*' ':!:*.d.ts' ':!:.*' | head -1)" ]; then
+          echo "• no TypeScript source yet: web-typecheck skipped"; exit 0
+        fi
         # NOT `npx tsc`: the npm package named "tsc" is an abandoned 2016 release
         # of the compiler, so when a repo's deps are missing npx resolves the
         # squatter instead of the project's TypeScript.
@@ -39,5 +51,9 @@ pre-push:
       # Coverage floor defaults to 80% (set centrally by oc-hooks); override per-repo
       # with OC_MIN_COVERAGE (see docs/INSTALL.md). Full run so the gate is meaningful.
       run: |
+        # Nothing to check in a project with no JS/TS source yet (a new repo): pass with a note.
+        if [ -z "$(git ls-files -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.mjs' '*.cjs' ':!:*.config.*' ':!:*.d.ts' ':!:.*' | head -1)" ]; then
+          echo "• no JS/TS source yet: web-test skipped"; exit 0
+        fi
         [ -x node_modules/.bin/vitest ] || { echo "✗ vitest is not installed here. Run: npm ci"; exit 1; }
         node_modules/.bin/vitest run --coverage --coverage.thresholds.lines=${OC_MIN_COVERAGE:-90}

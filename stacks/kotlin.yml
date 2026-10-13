@@ -22,6 +22,10 @@ pre-push:
       # Adjust the Gradle task/module as needed (e.g. :app:testDebugUnitTest).
       # Coverage enforcement requires the JaCoCo plugin producing an XML report.
       run: |
+        # Nothing to check in a project with no Kotlin/Java source yet (a new repo): pass with a note.
+        if [ -z "$(git ls-files -- '*.kt' '*.java' | head -1)" ]; then
+          echo "• no Kotlin/Java source yet: kotlin-test skipped"; exit 0
+        fi
         ./gradlew test jacocoTestReport || exit 1
         report=$(find . -path '*/jacoco/*.xml' 2>/dev/null | head -1)
         if [ -n "$report" ]; then

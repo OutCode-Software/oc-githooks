@@ -24,10 +24,19 @@ pre-push:
   parallel: false
   commands:
     php-analyse:
-      run: phpstan analyse --no-progress
+      run: |
+        # Nothing to check in a project with no PHP source yet (a new repo): pass with a note.
+        if [ -z "$(git ls-files -- '*.php' | head -1)" ]; then
+          echo "• no PHP source yet: php-analyse skipped"; exit 0
+        fi
+        phpstan analyse --no-progress
     php-test:
       # phpunit with Clover coverage; fails if line coverage < 80%.
       run: |
+        # Nothing to check in a project with no PHP source yet (a new repo): pass with a note.
+        if [ -z "$(git ls-files -- '*.php' | head -1)" ]; then
+          echo "• no PHP source yet: php-test skipped"; exit 0
+        fi
         phpunit --coverage-clover=coverage/clover.xml || exit 1
         line=$(grep -o '<metrics [^>]*>' coverage/clover.xml | tail -1)
         covered=$(printf '%s' "$line" | sed -E 's/.*coveredstatements="([0-9]+)".*/\1/')

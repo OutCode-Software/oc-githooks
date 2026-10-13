@@ -38,6 +38,8 @@ Every hook we run today, plus the full menu of what git hooks *can* do and what 
 
 ### Per-stack layers
 
+Every stack check first looks for the project's source files (`git ls-files`, config files excluded). In a new repo with none yet, it passes with a note instead of failing on missing tools or tests; from the first source file on, it runs as listed.
+
 All test-running stacks enforce a **≥90% line-coverage gate** on pre-push (a solid baseline that rises over time).
 
 - **Python/Django** (`stacks/python.yml`): `ruff format` + `ruff check --fix` (pre-commit), no `pdb`/`breakpoint()`/`ipdb`; `mypy` + `pytest -x -q --cov=<src> --cov-fail-under` (90% gate) (pre-push). **`mypy` is opt-in** — it self-skips unless the repo has a `[tool.mypy]`/`[mypy]` config. The coverage root is **auto-detected — `apps/` if present, else `.`**; override with `OC_COV_SOURCE`. Docker-first repos run both pre-push commands in the container via `OC_PY_RUNNER`.
