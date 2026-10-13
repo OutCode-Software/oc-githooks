@@ -69,7 +69,7 @@ These lint/format files that appear in many repos regardless of language — the
 
 ### There is **no `post-push` hook**
 
-Git has no client hook that fires *after* a push. The client push lifecycle ends at `pre-push` (fires before data is sent; can block). Anything that must react after a push runs **server-side** — on GitHub that's **branch-protection rulesets** and **Actions triggered `on: push`** (our CI mirror). That's the correct place for authoritative enforcement, since a client hook can always be skipped with `--no-verify`.
+Git has no client hook that fires *after* a push. The client push lifecycle ends at `pre-push` (fires before data is sent; can block). Anything that must react after a push runs **server-side** — on GitHub that's **branch-protection rulesets** and **Actions triggered `on: push`** (the project's CI, from `/outcode-standard:ci`). That's the correct place for authoritative enforcement, since a client hook can always be skipped with `--no-verify`.
 
 ### Client-side hooks
 
@@ -93,7 +93,7 @@ Git has no client hook that fires *after* a push. The client push lifecycle ends
 |---|---|---|
 | `pre-receive` / `update` | **branch-protection rulesets** | reject bad pushes at the source (no direct push/force-push/delete; required reviews + checks) |
 | — | **secret scanning + push protection** | block secrets even when the local hook was skipped |
-| `post-receive` | **Actions `on: push` / `on: pull_request`** (CI mirror) | full lint/typecheck/test/SAST/SCA; deploy; update ClickUp status |
+| `post-receive` | **Actions `on: push` / `on: pull_request`** (project CI) | full lint/typecheck/test/SAST/SCA; deploy; update ClickUp status |
 
 ---
 

@@ -50,8 +50,8 @@ This copies:
 | `.gitleaks.toml` | `.gitleaks.toml` |
 | `examples/lefthook.<stack>.yml` | `lefthook.yml` |
 
-(The Actions CI mirror is **not** installed by default — see [`CI.md`](CI.md). Use the
-free GitHub branch-protection rulesets + secret scanning as the server-side gate.)
+(CI isn't part of these hooks: a project gets it from outcode-standard's `/outcode-standard:ci`.
+See [`CI.md`](CI.md).)
 
 Then, in your repo:
 
@@ -125,8 +125,8 @@ with no per-commit network call.
 > OutCode-Software repos are cloned, so devs are already authenticated for it. If your
 > team uses **SSH** keys with OutCode-Software access, override with
 > `git_url: git@github.com:OutCode-Software/oc-githooks` (or your SSH-config alias).
-> Confirm access first: `git ls-remote <git_url> v6`. **CI** needs its own access: give
-> the `git-hooks-mirror` workflow a deploy key or a PAT with read access to `oc-githooks`.
+> Confirm access first: `git ls-remote <git_url> v6`. CI from `/outcode-standard:ci` runs
+> the project's checks directly and doesn't fetch these hooks, so it needs no access.
 
 **Getting updates:** with `ref: v6` + `refetch_frequency: 24h`, non-breaking updates
 arrive automatically within a day (we fast-forward the rolling major tag on each release). Pin an
@@ -284,8 +284,8 @@ lefthook run pre-push   --all-files
 ## Bypassing (rare, and still caught by CI)
 
 `git commit --no-verify` / `git push --no-verify` skip local hooks. On GitHub Free,
-nothing server-side blocks the push, but it is still caught: the **deploy guard** refuses
-anything that isn't released through the policy, and the **daily audit** reports direct
+nothing server-side blocks the push, but it is still caught: **CI** runs the same checks on
+every PR, the **release guard** refuses releases that don't follow the policy, and the **daily audit** reports direct
 pushes, unapproved merges and stray tags (see [`CI.md`](CI.md) and
 [`GIT-FLOW-POLICY.md`](GIT-FLOW-POLICY.md#7-enforcement)). Commits made with
 `--no-verify` still carry the `OC-Hooks` and `ClickUp` trailers. Use `--no-verify` only in

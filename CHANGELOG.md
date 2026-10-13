@@ -4,6 +4,14 @@ All notable changes to oc-githooks. Format loosely follows Keep a Changelog; ver
 
 ## [Unreleased]
 
+### Docs
+- Git Flow policy 1.2: **CI runs on every PR** (format, lint, type-check, test, build), and
+  the CI/CD workflows come from `/outcode-standard:ci`. **How a project deploys is its own
+  choice**; the only rule is that deployments are automated and run in the pipeline. The
+  release guard in the workflows replaces the required server-side deploy guard (now
+  recommended, not required). `docs/CI.md`, the README and `docs/INSTALL.md` follow. No
+  change to the hooks.
+
 ## [6.1.0] — 2026-10-13
 
 ### Fixed
