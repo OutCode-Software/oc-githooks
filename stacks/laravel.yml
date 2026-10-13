@@ -16,8 +16,18 @@ pre-push:
   parallel: false
   commands:
     laravel-analyse:
-      run: ./vendor/bin/phpstan analyse --no-progress
+      run: |
+        # Nothing to check in a project with no PHP source yet (a new repo): pass with a note.
+        if [ -z "$(git ls-files -- '*.php' | head -1)" ]; then
+          echo "• no PHP source yet: laravel-analyse skipped"; exit 0
+        fi
+        ./vendor/bin/phpstan analyse --no-progress
     laravel-test:
       # Coverage floor defaults to 80% (set centrally by oc-hooks); override per-repo
       # with OC_MIN_COVERAGE (see docs/INSTALL.md). Needs pcov/xdebug.
-      run: php artisan test --coverage --min=${OC_MIN_COVERAGE:-90}
+      run: |
+        # Nothing to check in a project with no PHP source yet (a new repo): pass with a note.
+        if [ -z "$(git ls-files -- '*.php' | head -1)" ]; then
+          echo "• no PHP source yet: laravel-test skipped"; exit 0
+        fi
+        php artisan test --coverage --min=${OC_MIN_COVERAGE:-90}

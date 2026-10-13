@@ -18,10 +18,19 @@ pre-push:
   parallel: false
   commands:
     flutter-analyze:
-      run: flutter analyze
+      run: |
+        # Nothing to check in a project with no Dart source yet (a new repo): pass with a note.
+        if [ -z "$(git ls-files -- '*.dart' | head -1)" ]; then
+          echo "• no Dart source yet: flutter-analyze skipped"; exit 0
+        fi
+        flutter analyze
     flutter-test:
       # Unit tests must pass and cover >=80% of lines (bar rises over time).
       run: |
+        # Nothing to check in a project with no Dart source yet (a new repo): pass with a note.
+        if [ -z "$(git ls-files -- '*.dart' | head -1)" ]; then
+          echo "• no Dart source yet: flutter-test skipped"; exit 0
+        fi
         rm -f coverage/lcov.info
         flutter test --coverage || exit 1
         MIN="${OC_MIN_COVERAGE:-90}"

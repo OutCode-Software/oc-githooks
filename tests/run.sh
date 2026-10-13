@@ -122,6 +122,59 @@ git switch -q CU-86e3abc12
 git commit -q --allow-empty --no-verify -m "chore: bypassed" >/dev/null 2>&1
 assert "a --no-verify commit still carries both trailers" sh -c 'git log -1 --format=%B | grep -q "^OC-Hooks: " && git log -1 --format=%B | grep -q "^ClickUp: CU-86e3abc12"'
 
+echo "New projects: stack checks pass until the project has source code"
+# new_project <name> <stack>... — an empty repo on CU-new1 with base + those stacks.
+# No stack tools are installed, which is what a brand-new project looks like.
+new_project() {
+  local d="$W/$1"; shift
+  git init -q --bare "$d.git" && git init -q "$d" && cd "$d" || exit 1
+  git config user.email dev@example.com && git config user.name Dev
+  { printf 'remotes:\n  - git_url: file://%s/oc-githooks\n    ref: v-test\n    configs:\n      - base.yml\n' "$W"
+    for st; do printf '      - stacks/%s.yml\n' "$st"; done; } > lefthook.yml
+  gitq add -A && gitq commit -q -m "chore: init" && git branch -M main
+  git remote add origin "$d.git" && gitq push -q origin main
+  lefthook install >/dev/null 2>&1
+  git switch -q -c CU-new1
+}
+push_out() { git push -u origin CU-new1 2>&1; }
+
+new_project node-empty node
+echo '{"name":"x","private":true}' > package.json && git add package.json
+check ok   "node: a project with only package.json can commit (no prettier yet)" git commit -m "chore: add package.json"
+check ok   "node: …and push (no type-check or tests to run yet)" git push -u origin CU-new1
+printf 'export default [];\n' > eslint.config.js && printf 'module.exports = {};\n' > .prettierrc.cjs
+printf 'export default {};\n' > vitest.config.ts && printf 'export {};\n' > types.d.ts
+git add -A
+check ok   "node: config files alone don't count as source" git commit -m "chore: add tool configs"
+check ok   "node: …and still push" git push origin CU-new1
+mkdir -p src && printf 'export const a = 1;\n' > src/index.js && git add src
+check fail "node: once there is JS source, a missing prettier fails the commit" git commit -m "feat: add index"
+gitq commit -q -m "feat: add index"
+out="$(push_out)"
+assert "node: …and the push needs a test runner" grep -q "No test runner found" <<<"$out"
+assert "node: plain JS (no .ts files) passes the type-check" grep -q "✔️ node-typecheck" <<<"$out"
+printf 'export const b: number = 2;\n' > src/b.ts && gitq add src && gitq commit -q -m "feat: add b"
+assert "node: once there is TypeScript, a missing compiler fails the push" grep -q "typescript is not installed" <<<"$(push_out)"
+
+new_project web-empty web
+echo '{"name":"w","private":true}' > package.json && git add package.json
+check ok   "web: a project with only package.json can commit" git commit -m "chore: add package.json"
+check ok   "web: …and push" git push -u origin CU-new1
+mkdir -p app && printf 'export default function Page() { return null; }\n' > app/page.tsx && gitq add app && gitq commit -q -m "feat: add page"
+check fail "web: once there is source, the push runs the checks" git push origin CU-new1
+
+new_project py-empty python
+printf '[project]\nname = "p"\nversion = "0.1.0"\n' > pyproject.toml && git add pyproject.toml
+check ok   "python: a project with only pyproject.toml can commit" git commit -m "chore: add pyproject"
+check ok   "python: …and push (no tests to run yet)" git push -u origin CU-new1
+printf 'def f():\n    return 1\n' > app.py && gitq add app.py && gitq commit -q -m "feat: add app"
+check fail "python: once there is Python source, the push runs the tests" git push origin CU-new1
+
+new_project swift-empty swift
+printf '// swift-tools-version:5.9\n' > Package.swift
+gitq add Package.swift && gitq commit -q -m "chore: add package manifest"
+check ok   "swift: a project with only Package.swift can push" git push -u origin CU-new1
+
 echo
 echo "$PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ]

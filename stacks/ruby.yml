@@ -21,6 +21,10 @@ pre-push:
       # RSpec with SimpleCov; fails if line coverage < 80%.
       # SimpleCov must be enabled so it writes coverage/.last_run.json (its default).
       run: |
+        # Nothing to check in a project with no Ruby source yet (a new repo): pass with a note.
+        if [ -z "$(git ls-files -- '*.rb' | head -1)" ]; then
+          echo "• no Ruby source yet: ruby-test skipped"; exit 0
+        fi
         bundle exec rspec || exit 1
         if [ -f coverage/.last_run.json ]; then
           pct=$(ruby -rjson -e 'r=JSON.parse(File.read("coverage/.last_run.json"))["result"]; puts (r["line"]||r["covered_percent"]||0).to_i')

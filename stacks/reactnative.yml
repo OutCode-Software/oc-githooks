@@ -5,13 +5,21 @@ pre-commit:
     rn-format:
       glob: "*.{ts,tsx,js,jsx,json}"
       run: |
-        [ -x node_modules/.bin/prettier ] || { echo "✗ prettier is not installed here. Run: npm ci"; exit 1; }
+        if [ ! -x node_modules/.bin/prettier ]; then
+          # A new repo with no JS/TS source yet has nothing to check: pass with a note.
+          [ -z "$(git ls-files -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.mjs' '*.cjs' ':!:*.config.*' ':!:*.d.ts' ':!:.*' | head -1)" ] && { echo "• prettier not installed, no JS/TS source yet: rn-format skipped"; exit 0; }
+          echo "✗ prettier is not installed here. Run: npm ci"; exit 1
+        fi
         node_modules/.bin/prettier --write {staged_files}
       stage_fixed: true
     rn-lint:
       glob: "*.{ts,tsx,js,jsx}"
       run: |
-        [ -x node_modules/.bin/eslint ] || { echo "✗ eslint is not installed here. Run: npm ci"; exit 1; }
+        if [ ! -x node_modules/.bin/eslint ]; then
+          # A new repo with no JS/TS source yet has nothing to check: pass with a note.
+          [ -z "$(git ls-files -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.mjs' '*.cjs' ':!:*.config.*' ':!:*.d.ts' ':!:.*' | head -1)" ] && { echo "• eslint not installed, no JS/TS source yet: rn-lint skipped"; exit 0; }
+          echo "✗ eslint is not installed here. Run: npm ci"; exit 1
+        fi
         node_modules/.bin/eslint --fix {staged_files}
       stage_fixed: true
     rn-no-debugger:
@@ -37,6 +45,10 @@ pre-push:
   commands:
     rn-typecheck:
       run: |
+        # Nothing to check in a project with no TypeScript source yet (a new repo): pass with a note.
+        if [ -z "$(git ls-files -- '*.ts' '*.tsx' ':!:*.config.*' ':!:*.d.ts' ':!:.*' | head -1)" ]; then
+          echo "• no TypeScript source yet: rn-typecheck skipped"; exit 0
+        fi
         # NOT `npx tsc`: the npm package named "tsc" is an abandoned 2016 release
         # of the compiler, so when a repo's deps are missing npx resolves the
         # squatter instead of the project's TypeScript.
@@ -45,6 +57,10 @@ pre-push:
     rn-test:
       # Jest with coverage; fails below the OC_MIN_COVERAGE line floor (default 90).
       run: |
+        # Nothing to check in a project with no JS/TS source yet (a new repo): pass with a note.
+        if [ -z "$(git ls-files -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.mjs' '*.cjs' ':!:*.config.*' ':!:*.d.ts' ':!:.*' | head -1)" ]; then
+          echo "• no JS/TS source yet: rn-test skipped"; exit 0
+        fi
         [ -x node_modules/.bin/jest ] || { echo "✗ jest is not installed here. Run: npm ci"; exit 1; }
         node_modules/.bin/jest --coverage --coverageReporters=json-summary --passWithNoTests || exit 1
         node -e 'const min=+(process.env.OC_MIN_COVERAGE||90); const p=require("./coverage/coverage-summary.json").total.lines.pct; if(p<min){console.error("✗ Line coverage "+p+"% is below the "+min+"% minimum. Add tests.");process.exit(1)} console.log("✓ Coverage "+p+"% (>="+min+"%)")'

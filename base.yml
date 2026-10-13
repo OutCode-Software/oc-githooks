@@ -94,7 +94,7 @@ prepare-commit-msg:
     #                          even after the branch is squash-merged and deleted
     trailers:
       run: |
-        git interpret-trailers --in-place --if-exists replace --trailer "OC-Hooks: v6.0.0" "{1}"
+        git interpret-trailers --in-place --if-exists replace --trailer "OC-Hooks: v6.1.0" "{1}"
         b=$(git symbolic-ref --short -q HEAD || true)
         if printf '%s\n' "$b" | grep -qE '^CU-[0-9a-z]+$'; then
           git interpret-trailers --in-place --if-exists replace --trailer "ClickUp: $b" "{1}"
